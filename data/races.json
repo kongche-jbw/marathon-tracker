@@ -1902,7 +1902,7 @@
       "半程马拉松"
     ],
     "category": "gold",
-    "updatedAt": "2026-09-29T02:40:23.992Z",
+    "updatedAt": "2026-10-07T23:30:51.965Z",
     "needLottery": true,
     "officialSite": "http://shenzhenmarathon.org.cn",
     "scale": "30000人",
@@ -2671,7 +2671,7 @@
       "半程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-10-06T23:52:53.574Z"
+    "updatedAt": "2026-10-07T23:47:12.750Z"
   },
   {
     "id": "泰州马拉松",
@@ -2759,13 +2759,13 @@
     "country": "中国",
     "province": "山东",
     "raceDate": "2026-10-18",
-    "regStatus": "open",
+    "regStatus": "pending",
     "events": [
       "全程马拉松",
       "半程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-10-07T00:20:46.263Z",
+    "updatedAt": "2026-10-07T23:56:24.603Z",
     "regStart": "2026-07-01"
   },
   {
