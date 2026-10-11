@@ -1915,16 +1915,19 @@
     "country": "中国",
     "province": "广东",
     "raceDate": "2026-12-20",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
       "全程马拉松",
       "半程马拉松"
     ],
     "category": "gold",
-    "updatedAt": "2026-09-03T01:19:17.942Z",
+    "updatedAt": "2026-10-11T13:06:12.002Z",
     "needLottery": true,
-    "officialSite": "http://www.guangzhou-marathon.com",
-    "scale": "26000人"
+    "officialSite": "https://www.guangzhou-marathon.com",
+    "scale": "26000人",
+    "regStart": "2026-09-02",
+    "regEnd": "2026-09-11",
+    "lotteryDate": "2026-09-22"
   },
   {
     "id": "福州马拉松",
@@ -2671,7 +2674,7 @@
       "半程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-10-07T23:47:12.750Z"
+    "updatedAt": "2026-10-11T13:06:29.634Z"
   },
   {
     "id": "泰州马拉松",
@@ -2712,15 +2715,17 @@
     "country": "中国",
     "province": "山东",
     "raceDate": "2026-10-25",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
       "全程马拉松",
       "半程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-10-05T18:43:45.950Z",
-    "officialSite": "http://weihaimarathon.com/",
-    "regStart": "2026-06-23"
+    "updatedAt": "2026-10-08T23:32:00.508Z",
+    "officialSite": "https://weihaimarathon.com",
+    "regStart": "2026-06-23",
+    "regEnd": "2026-07-15",
+    "lotteryDate": "2026-07-25"
   },
   {
     "id": "重庆开州汉丰湖马拉松",
@@ -2744,13 +2749,13 @@
     "country": "中国",
     "province": "浙江",
     "raceDate": "2026-11-15",
-    "regStatus": "pending",
+    "regStatus": "open",
     "events": [
       "全程马拉松",
       "半程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-09-29T02:42:43.710Z",
+    "updatedAt": "2026-10-11T13:08:07.147Z",
     "regStart": "2026-09-15"
   },
   {
@@ -2794,7 +2799,7 @@
       "半程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-10-07T00:21:02.015Z"
+    "updatedAt": "2026-10-11T13:08:19.603Z"
   },
   {
     "id": "扬州高邮大运河半程马拉松",
@@ -2895,7 +2900,7 @@
       "半程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-09-09T01:25:05.835Z",
+    "updatedAt": "2026-10-11T13:08:52.245Z",
     "officialSite": "https://fuchuan.sport-china.cn"
   },
   {
@@ -2910,7 +2915,7 @@
       "半程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-09-09T01:25:08.312Z"
+    "updatedAt": "2026-10-08T23:33:53.750Z"
   },
   {
     "id": "河源万绿湖马拉松",
@@ -3022,7 +3027,7 @@
     ],
     "category": "major",
     "officialSite": "https://www.chicagomarathon.com/",
-    "updatedAt": "2026-10-05T23:39:02.822Z"
+    "updatedAt": "2026-10-08T23:34:21.649Z"
   },
   {
     "id": "nyc-marathon",
@@ -3076,7 +3081,7 @@
     ],
     "category": "major",
     "officialSite": "https://www.tcslondonmarathon.com/",
-    "updatedAt": "2026-10-05T23:44:33.543Z"
+    "updatedAt": "2026-10-11T13:09:39.529Z"
   },
   {
     "id": "valencia-marathon",
@@ -3085,28 +3090,28 @@
     "city": "瓦伦西亚",
     "raceDate": "2026-12-06",
     "location": "艺术科学城（终点）",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
       "全程马拉松"
     ],
     "category": "platinum",
     "officialSite": "https://www.valenciaciudaddelrunning.com/",
-    "updatedAt": "2026-09-09T01:25:27.263Z"
+    "updatedAt": "2026-10-08T23:36:59.912Z"
   },
   {
     "id": "dubai-marathon",
     "name": "迪拜马拉松",
     "country": "阿联酋",
     "city": "迪拜",
-    "raceDate": "2027-01-24",
+    "raceDate": "2027-01-17",
     "regStatus": "pending",
     "events": [
       "全程马拉松",
       "半程马拉松"
     ],
     "category": "platinum",
-    "officialSite": "https://www.dubaimarathon.org",
-    "updatedAt": "2026-09-03T01:21:07.309Z"
+    "officialSite": "https://www.dubaimarathon.org/",
+    "updatedAt": "2026-10-11T13:10:33.993Z"
   },
   {
     "id": "rotterdam-marathon",
@@ -3148,7 +3153,7 @@
       "全程马拉松"
     ],
     "category": "platinum",
-    "updatedAt": "2026-09-03T01:21:16.393Z"
+    "updatedAt": "2026-10-08T23:37:44.041Z"
   },
   {
     "id": "乌鲁木齐马拉松",
@@ -3244,12 +3249,12 @@
     "country": "中国",
     "province": "山东",
     "raceDate": "2026-10-18",
-    "regStatus": "closed",
+    "regStatus": "pending",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T01:19:57.624Z",
+    "updatedAt": "2026-10-11T13:11:04.377Z",
     "officialSite": "https://www.hhkmls.com/"
   },
   {
@@ -3295,7 +3300,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T01:20:09.978Z"
+    "updatedAt": "2026-10-11T13:11:34.088Z"
   },
   {
     "id": "铁门关半程马拉松",
@@ -3467,12 +3472,12 @@
     "country": "中国",
     "province": "广西",
     "raceDate": "2026-11-01",
-    "regStatus": "open",
+    "regStatus": "pending",
     "events": [
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-05T23:45:41.542Z"
+    "updatedAt": "2026-10-11T13:12:15.224Z"
   },
   {
     "id": "烟台马拉松",
@@ -3485,7 +3490,7 @@
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-05T23:45:49.843Z",
+    "updatedAt": "2026-10-11T13:13:04.349Z",
     "officialSite": "https://m.irunner.mobi/mix-race-apply/index.html?match_eng=6a0519d3eab65#/grid"
   },
   {
@@ -3550,7 +3555,7 @@
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T02:21:06.344Z"
+    "updatedAt": "2026-10-11T13:13:28.725Z"
   },
   {
     "id": "常州西太湖半程马拉松",
@@ -3595,7 +3600,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T02:38:03.110Z",
+    "updatedAt": "2026-10-11T13:14:57.332Z",
     "officialSite": "http://huanggangmarathon.com/"
   },
   {
@@ -3609,7 +3614,7 @@
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T02:38:16.899Z"
+    "updatedAt": "2026-10-11T13:16:00.448Z"
   },
   {
     "id": "马鞍山采石矶半程马拉松",
@@ -3638,7 +3643,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T02:38:29.878Z"
+    "updatedAt": "2026-10-11T13:16:19.797Z"
   },
   {
     "id": "涪陵白鹤梁半程马拉松",
@@ -3681,7 +3686,7 @@
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T02:56:18.000Z"
+    "updatedAt": "2026-10-11T13:16:57.082Z"
   },
   {
     "id": "西昌马拉松",
@@ -3689,12 +3694,14 @@
     "country": "中国",
     "province": "四川",
     "raceDate": "2026-11-07",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:26:58.906Z"
+    "updatedAt": "2026-10-11T13:17:21.070Z",
+    "regStart": "2026-05-28",
+    "regEnd": "2026-06-30"
   },
   {
     "id": "无锡锡山宛山湖马拉松",
@@ -3702,13 +3709,16 @@
     "country": "中国",
     "province": "江苏",
     "raceDate": "2026-11-08",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:27:01.405Z",
-    "officialSite": "http://www.xishanmls.com/"
+    "updatedAt": "2026-10-11T13:19:11.674Z",
+    "officialSite": "http://www.xishanmls.com/",
+    "regStart": "2026-05-30",
+    "regEnd": "2026-06-30",
+    "lotteryDate": "2026-07-10"
   },
   {
     "id": "南通马拉松",
@@ -3787,12 +3797,14 @@
     "country": "中国",
     "province": "湖南",
     "raceDate": "2026-11-08",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:27:17.587Z"
+    "updatedAt": "2026-10-11T13:20:20.895Z",
+    "regStart": "2026-09-22",
+    "regEnd": "2026-10-09"
   },
   {
     "id": "滁州马拉松",
@@ -3815,12 +3827,14 @@
     "country": "中国",
     "province": "四川",
     "raceDate": "2026-11-08",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:27:22.098Z"
+    "updatedAt": "2026-10-11T13:20:57.701Z",
+    "regStart": "2026-07-06",
+    "regEnd": "2026-08-31"
   },
   {
     "id": "杭州钱塘女子半程马拉松",
@@ -3833,7 +3847,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:27:24.350Z"
+    "updatedAt": "2026-10-11T13:21:41.042Z"
   },
   {
     "id": "郴州马拉松",
@@ -3846,7 +3860,7 @@
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:27:26.625Z",
+    "updatedAt": "2026-10-11T13:22:10.897Z",
     "officialSite": "https://chenzhou.sport-china.cn/"
   },
   {
@@ -3860,7 +3874,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-05T23:52:48.406Z"
+    "updatedAt": "2026-10-11T13:23:19.388Z"
   },
   {
     "id": "崇左马拉松",
@@ -3873,7 +3887,7 @@
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:27:31.489Z"
+    "updatedAt": "2026-10-11T13:23:49.109Z"
   },
   {
     "id": "罗城半程马拉松",
@@ -3886,7 +3900,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:27:33.773Z"
+    "updatedAt": "2026-10-11T13:24:06.899Z"
   },
   {
     "id": "武汉光谷马拉松",
@@ -3941,12 +3955,12 @@
     "country": "中国",
     "province": "安徽",
     "raceDate": "2026-11-15",
-    "regStatus": "open",
+    "regStatus": "pending",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T02:56:43.321Z",
+    "updatedAt": "2026-10-11T13:25:07.879Z",
     "regStart": "2026-08-25"
   },
   {
@@ -3955,12 +3969,12 @@
     "country": "中国",
     "province": "浙江",
     "raceDate": "2026-11-15",
-    "regStatus": "open",
+    "regStatus": "closed",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-29T02:50:12.147Z",
+    "updatedAt": "2026-10-11T13:25:42.702Z",
     "officialSite": "https://jiande.zjim.org/",
     "regStart": "2026-09-02",
     "regEnd": "2026-09-30"
@@ -4039,12 +4053,14 @@
     "country": "中国",
     "province": "浙江",
     "raceDate": "2026-11-22",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:28:02.017Z"
+    "updatedAt": "2026-10-11T13:26:03.738Z",
+    "regStart": "2026-09-04",
+    "regEnd": "2026-09-24"
   },
   {
     "id": "防城港马拉松",
@@ -4167,13 +4183,13 @@
     "name": "惠州马拉松",
     "country": "中国",
     "province": "广东",
-    "raceDate": "2026-11-29",
+    "raceDate": "2026-12-27",
     "regStatus": "pending",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-08T01:24:02.785Z",
+    "updatedAt": "2026-10-11T13:27:04.464Z",
     "officialSite": "http://huizhou-marathon.com/"
   },
   {
@@ -4310,7 +4326,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-09T01:28:30.984Z",
+    "updatedAt": "2026-10-11T13:27:47.022Z",
     "officialSite": "https://chengmai.jinshensports.com"
   },
   {
@@ -4324,7 +4340,7 @@
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T02:58:53.137Z"
+    "updatedAt": "2026-10-11T13:28:24.082Z"
   },
   {
     "id": "琼海博鳌马拉松",
@@ -4350,7 +4366,7 @@
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T03:00:07.923Z",
+    "updatedAt": "2026-10-11T13:28:49.008Z",
     "regStart": "2026-09-30",
     "regEnd": "2026-11-20"
   },
@@ -4378,7 +4394,7 @@
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-03T01:25:05.312Z",
+    "updatedAt": "2026-10-11T13:29:55.070Z",
     "officialSite": "https://www.nanning-marathon.com"
   },
   {
@@ -4429,12 +4445,12 @@
     "country": "中国",
     "province": "广东",
     "raceDate": "2026-12-20",
-    "regStatus": "open",
+    "regStatus": "pending",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-07T03:02:05.681Z",
+    "updatedAt": "2026-10-11T13:30:20.824Z",
     "officialSite": "https://jiangmen.sport-china.cn/",
     "regStart": "2026-09-07"
   },
@@ -4546,13 +4562,13 @@
     "city": "首尔",
     "raceDate": "2026-11-01",
     "location": "桑格姆世界杯公园（起点）",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
       "全程马拉松"
     ],
     "scale": "30000人",
     "category": "B",
-    "updatedAt": "2026-10-07T03:03:33.070Z"
+    "updatedAt": "2026-10-11T13:33:10.389Z"
   },
   {
     "id": "bangkok-marathon",
@@ -4596,14 +4612,14 @@
     "raceDate": "2026-12-06",
     "location": "F1 Pit Building（起点）",
     "regEnd": "2026-10-25",
-    "regStatus": "open",
+    "regStatus": "pending",
     "events": [
       "全程马拉松",
       "半程马拉松"
     ],
     "category": "gold",
     "officialSite": "https://singaporeinternationalmarathon.com",
-    "updatedAt": "2026-10-07T03:03:49.617Z"
+    "updatedAt": "2026-10-11T13:34:14.313Z"
   },
   {
     "id": "kuala-lumpur-marathon",
@@ -4740,7 +4756,7 @@
       "半程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-10-07T03:04:36.721Z"
+    "updatedAt": "2026-10-11T13:34:43.709Z"
   },
   {
     "id": "2026杭州—阿克苏同心杯马拉松-2026",
@@ -4810,7 +4826,7 @@
       "全程马拉松"
     ],
     "category": "B",
-    "updatedAt": "2026-10-07T03:05:16.350Z",
+    "updatedAt": "2026-10-11T13:35:34.642Z",
     "officialSite": "https://www.xmim.org"
   },
   {
@@ -4820,13 +4836,13 @@
     "city": "首尔",
     "raceDate": "2027-03-21",
     "regStart": "2026-09-01",
-    "regStatus": "pending",
+    "regStatus": "open",
     "scale": "40000人",
     "events": [
       "全程马拉松",
       "10公里"
     ],
     "category": "B",
-    "updatedAt": "2026-09-30T01:24:01.394Z"
+    "updatedAt": "2026-10-11T13:38:17.824Z"
   }
 ]
