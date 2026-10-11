@@ -1,13 +1,23 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { Race } from "@/types/race";
-import { deriveStatus, sortRaces, computeStats, daysLeftUntil } from "@/lib/status";
+import { deriveStatus, computeStats, daysLeftUntil } from "@/lib/status";
 import StatsBar from "./StatsBar";
-import FilterBar, { type Filters } from "./FilterBar";
+import FilterBar from "./FilterBar";
+import { DEFAULT_FILTERS, filterRaces, parseRaceView, serializeRaceView, type RaceView } from "@/lib/filters";
 import RaceCard from "./RaceCard";
 
-const DEFAULT_FILTERS: Filters = { region: "", status: "", event: "", keyword: "", quick: "unfinished" };
+const subscribeToUrl = (listener: () => void) => {
+  window.addEventListener("popstate", listener);
+  window.addEventListener("race-filters-change", listener);
+  return () => {
+    window.removeEventListener("popstate", listener);
+    window.removeEventListener("race-filters-change", listener);
+  };
+};
+const getSearch = () => window.location.search;
+const getServerSearch = () => "";
 
 /** 备案号预留位：完成 ICP 备案后填入备案号（如 "京ICP备XXXXXXXX号"），页脚会自动展示 */
 const ICP_NUMBER = "";
@@ -30,13 +40,13 @@ function OpenCard({ race, now }: { race: Race; now: Date }) {
           </span>
         )}
       </div>
-      <h3 className="mt-2 truncate text-base font-bold text-slate-900 lg:text-lg">{race.name}</h3>
+      <h3 className="mt-2 break-words text-base font-bold text-slate-900 lg:text-lg">{race.name}</h3>
       <p className="mt-0.5 text-sm text-slate-500 lg:text-base">
         {race.raceDate.slice(5, 7)}月{race.raceDate.slice(8)}日 · {[race.country === "中国" ? race.province : race.country, race.city].filter(Boolean).join(" ")}
       </p>
       {race.officialSite && (
         <a href={race.officialSite} target="_blank" rel="noreferrer"
-           className="mt-2 inline-block text-sm font-semibold text-orange-500 hover:text-orange-600">
+           className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-orange-500 hover:text-orange-600">
           前往报名 ↗
         </a>
       )}
@@ -54,8 +64,26 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
     const timer = setInterval(sync, 60_000);
     return () => clearInterval(timer);
   }, []);
-  const [tab, setTab] = useState<"domestic" | "international">("domestic");
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const search = useSyncExternalStore(subscribeToUrl, getSearch, getServerSearch);
+  const view = useMemo(() => parseRaceView(search), [search]);
+  const { tab, filters } = view;
+  const setView = (next: RaceView, replace = false) => {
+    const query = serializeRaceView(next, window.location.search);
+    const url = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+    if (url === `${window.location.pathname}${window.location.search}${window.location.hash}`) return;
+    window.history[replace ? "replaceState" : "pushState"](window.history.state, "", url);
+    window.dispatchEvent(new Event("race-filters-change"));
+  };
+  const resetFilters = () => setView({ tab, filters: DEFAULT_FILTERS });
+  useEffect(() => {
+    const toolbar = document.querySelector<HTMLElement>(".race-filter-toolbar");
+    if (!toolbar) return;
+    const update = () => document.documentElement.style.setProperty("--race-filter-height", `${toolbar.getBoundingClientRect().height + 16}px`);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(toolbar);
+    return () => { observer.disconnect(); document.documentElement.style.removeProperty("--race-filter-height"); };
+  }, []);
   // 返回顶部：滚动超过一屏后显示悬浮按钮
   const [showTop, setShowTop] = useState(false);
   useEffect(() => {
@@ -85,20 +113,8 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
     return [...set].sort((a, b) => a.localeCompare(b, "zh-Hans-CN"));
   }, [tabRaces, tab]);
 
-  const filtered = useMemo(() => {
-    const list = tabRaces.filter(r => {
-      const s = deriveStatus(r, now);
-      if (filters.quick === "unfinished" && s === "finished") return false;
-      if (filters.quick === "finished" && s !== "finished") return false;
-      const region = tab === "domestic" ? r.province : r.country;
-      if (filters.region && region !== filters.region) return false;
-      if (filters.status && s !== filters.status) return false;
-      if (filters.event && !r.events.includes(filters.event)) return false;
-      if (filters.keyword && !r.name.includes(filters.keyword) && !(r.shortName ?? "").includes(filters.keyword)) return false;
-      return true;
-    });
-    return sortRaces(list, now);
-  }, [tabRaces, filters, now, tab]);
+  const events = useMemo(() => [...new Set(tabRaces.flatMap(r => r.events))].sort(), [tabRaces]);
+  const filtered = useMemo(() => filterRaces(races, view, now), [races, view, now]);
 
   // 今日开跑：比赛日当天的赛事单独成组置顶（当天不再标"已结束"）
   const racingToday = useMemo(
@@ -150,8 +166,9 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
           {([["domestic", "🇨🇳 全国赛事"], ["international", "🌍 国际赛事"]] as const).map(([k, label]) => (
             <button
               key={k}
-              onClick={() => { setTab(k); setFilters(DEFAULT_FILTERS); }}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors lg:px-4 lg:py-1.5 lg:text-sm ${
+              onClick={() => setView({ tab: k, filters: DEFAULT_FILTERS })}
+              aria-pressed={tab === k}
+              className={`min-h-11 rounded-full px-4 py-2 text-sm font-semibold transition-colors lg:px-4 lg:py-1.5 lg:text-sm ${
                 tab === k ? "bg-orange-500 text-white shadow-sm" : "border border-orange-200 bg-white text-slate-600 hover:bg-orange-50"
               }`}
             >
@@ -161,6 +178,17 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
           ))}
         </div>
         <StatsBar open={stats.open} drawing={stats.drawing} updatedAt={updatedAt} />
+
+        {/* 先筛选再浏览：手机上无需越过整排报名卡片寻找搜索框。 */}
+        <section aria-label="筛选赛事" className="race-filter-toolbar sticky top-0 z-10 -mx-4 mt-4 bg-orange-50/90 px-4 py-2 backdrop-blur-xl">
+          <FilterBar filters={filters} regions={regions} events={events} months={months}
+            monthCounts={month => byMonth.get(month)?.length}
+            onChange={patch => setView({ tab, filters: { ...filters, ...patch } }, "keyword" in patch)}
+            onReset={resetFilters} />
+          <p role="status" aria-live="polite" aria-atomic="true" className="px-1 pt-2 text-xs text-slate-600">
+            找到 {filtered.length} 场赛事 · {tab === "domestic" ? "全国" : "国际"} · {filters.quick === "finished" ? "已结束" : filters.quick === "all" ? "全部赛期" : "未结束"}
+          </p>
+        </section>
 
         {/* 今日开跑：比赛当天的赛事单独成组 */}
         {racingToday.length > 0 && (
@@ -188,22 +216,11 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
           </section>
         )}
 
-        {/* 筛选工具栏（吸顶）：地区/状态/项目/月份跳转/搜索一行收齐 */}
-        <div className="sticky top-0 z-10 -mx-4 mt-6 bg-orange-50/90 px-4 py-2.5 backdrop-blur">
-          <FilterBar
-            filters={filters}
-            regions={regions}
-            months={months}
-            monthCounts={m => byMonth.get(m)?.length}
-            onChange={patch => setFilters(f => ({ ...f, ...patch }))}
-          />
-        </div>
-
         {/* 月份分组列表 */}
         {months.map(m => (
-          <section key={m} id={`month-${m}`} className="mt-8 scroll-mt-16">
+          <section key={m} id={`month-${m}`} className="race-month-section mt-8">
             <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 lg:text-xl">
-              🗓️ {Number(m.slice(5))}月
+              🗓️ {m.slice(0, 4)}年{Number(m.slice(5))}月
               <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">{byMonth.get(m)?.length}</span>
             </h2>
             <div className="mt-3 space-y-3">
@@ -227,7 +244,9 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
 
         {filtered.length === 0 && (
           <div className="mt-8 rounded-2xl border border-dashed border-orange-200 bg-white p-12 text-center text-slate-400">
-            🔍 没有符合条件的赛事
+            <p>🔍 没有符合条件的赛事</p>
+            <p className="mt-2 text-sm">试试搜索城市或国家，或减少筛选条件。</p>
+            <button type="button" onClick={resetFilters} className="mt-4 min-h-11 rounded-xl bg-orange-500 px-5 text-sm font-semibold text-white hover:bg-orange-600">重置筛选</button>
           </div>
         )}
 

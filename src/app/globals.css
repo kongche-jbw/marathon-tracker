@@ -24,3 +24,6 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Keep month headings clear of the responsive sticky filter panel. */
+.race-month-section { scroll-margin-top: var(--race-filter-height, 15rem); }

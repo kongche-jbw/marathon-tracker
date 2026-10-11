@@ -1,99 +1,64 @@
 "use client";
 
-export interface Filters {
-  region: string;      // 省份（国内）或国家（国际），""=全部
-  status: string;      // open/today/drawing/pending/closed/finished/""
-  event: string;       // 全程马拉松/半程马拉松/""
-  keyword: string;
-  quick: "unfinished" | "finished" | "all";
-}
+import type { Filters } from "@/lib/filters";
 
-const selectCls =
-  "appearance-none rounded-full border border-orange-200 bg-white py-1 pl-3 pr-7 text-xs font-semibold text-slate-600 focus:border-orange-400 focus:outline-none lg:py-1.5 lg:pl-4 lg:pr-8 lg:text-sm";
+const controlCls = "min-h-11 w-full rounded-xl border border-orange-100 bg-white px-3 text-sm text-slate-700 shadow-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200";
 
-function Chevron() {
-  return (
-    <svg aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-orange-400" viewBox="0 0 12 12" fill="none">
-      <path d="M2.5 4.5 6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-export default function FilterBar({ filters, regions, months, monthCounts, onChange }: {
+export default function FilterBar({ filters, regions, events, months, monthCounts, onChange, onReset }: {
   filters: Filters;
   regions: string[];
-  months: string[];                  // 未来赛事的月份分组，用于月份跳转下拉
+  events: string[];
+  months: string[];
   monthCounts: (m: string) => number | undefined;
   onChange: (patch: Partial<Filters>) => void;
+  onReset: () => void;
 }) {
-  // 状态下拉的当前值：处于"已结束"视图时显示已结束
   const statusValue = filters.quick === "finished" ? "finished" : filters.status;
-
-  // 选择"已结束"时同步切到已结束视图，其余回到默认的未结束视图
-  const pickStatus = (v: string) =>
-    onChange(v === "finished"
-      ? { status: "finished", quick: "finished" }
-      : { status: v, quick: "unfinished" });
+  const active = filters.region || filters.status || filters.event || filters.keyword || filters.quick !== "unfinished";
+  const pickStatus = (value: string) => onChange(value === "finished"
+    ? { status: "finished", quick: "finished" }
+    : { status: value, quick: "unfinished" });
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {/* 地区 */}
-      <div className="relative">
-        <select className={selectCls} value={filters.region} onChange={e => onChange({ region: e.target.value })}>
-          <option value="">全部地区</option>
-          {regions.map(r => <option key={r} value={r}>{r}</option>)}
-        </select>
-        <Chevron />
+    <div className="rounded-2xl border border-orange-100 bg-white/90 p-3 shadow-sm sm:p-4">
+      <div className="flex items-center gap-2">
+        <label className="min-w-0 flex-1">
+          <span className="sr-only">搜索赛事、城市或国家</span>
+          <input type="search" placeholder="搜索赛事、城市、国家…" value={filters.keyword}
+            onChange={e => onChange({ keyword: e.target.value })}
+            className={`${controlCls} bg-orange-50/40`} />
+        </label>
+        {active && <button type="button" onClick={onReset}
+          className="min-h-11 shrink-0 rounded-xl px-3 text-sm font-semibold text-orange-700 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-orange-500">重置筛选</button>}
       </div>
-
-      {/* 状态 */}
-      <div className="relative">
-        <select className={selectCls} value={statusValue} onChange={e => pickStatus(e.target.value)}>
-          <option value="">全部状态</option>
-          <option value="open">报名中</option>
-          <option value="today">今日开跑</option>
-          <option value="drawing">抽签中</option>
-          <option value="pending">筹备中</option>
-          <option value="closed">已截止</option>
-          <option value="finished">已结束</option>
-        </select>
-        <Chevron />
-      </div>
-
-      {/* 项目 */}
-      <div className="relative">
-        <select className={selectCls} value={filters.event} onChange={e => onChange({ event: e.target.value })}>
-          <option value="">全部项目</option>
-          <option value="全程马拉松">全程马拉松</option>
-          <option value="半程马拉松">半程马拉松</option>
-        </select>
-        <Chevron />
-      </div>
-
-      {/* 月份跳转：与筛选同排，选中即平滑滚动到对应月份 */}
-      {months.length > 1 && (
-        <div className="relative">
-          <select
-            className={selectCls}
-            value=""
-            aria-label="按月跳转"
-            onChange={e => { if (e.target.value) document.getElementById(`month-${e.target.value}`)?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
-          >
-            <option value="">按月跳转</option>
-            {months.map(m => (
-              <option key={m} value={m}>{Number(m.slice(5))}月 · {monthCounts(m)} 场</option>
-            ))}
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <label className="min-w-0"><span className="sr-only">赛事地区</span>
+          <select className={controlCls} value={filters.region} onChange={e => onChange({ region: e.target.value })}>
+            <option value="">全部地区</option>
+            {regions.map(region => <option key={region} value={region}>{region}</option>)}
           </select>
-          <Chevron />
-        </div>
-      )}
-
-      {/* 搜索 */}
-      <input
-        type="search" placeholder="搜索赛事名称…" value={filters.keyword}
-        onChange={e => onChange({ keyword: e.target.value })}
-        className="min-w-40 flex-1 rounded-full border border-orange-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600 focus:border-orange-400 focus:outline-none lg:px-4 lg:py-1.5 lg:text-sm"
-      />
+        </label>
+        <label className="min-w-0"><span className="sr-only">报名状态</span>
+          <select className={controlCls} value={statusValue} onChange={e => pickStatus(e.target.value)}>
+            <option value="">全部状态</option><option value="open">报名中</option>
+            <option value="today">今日开跑</option><option value="drawing">抽签中</option>
+            <option value="pending">筹备中</option><option value="closed">已截止</option><option value="finished">已结束</option>
+          </select>
+        </label>
+        <label className="min-w-0"><span className="sr-only">参赛项目</span>
+          <select className={controlCls} value={filters.event} onChange={e => onChange({ event: e.target.value })}>
+            <option value="">全部项目</option>
+            {[...new Set([...events, filters.event].filter(Boolean))].map(event => <option key={event} value={event}>{event}</option>)}
+          </select>
+        </label>
+        <label className="min-w-0"><span className="sr-only">按月跳转</span>
+          <select className={controlCls} value="" disabled={!months.length}
+            onChange={e => { if (e.target.value) document.getElementById(`month-${e.target.value}`)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); }}>
+            <option value="">按月跳转</option>
+            {months.map(month => <option key={month} value={month}>{month.slice(0, 4)}年{Number(month.slice(5))}月 · {monthCounts(month)} 场</option>)}
+          </select>
+        </label>
+      </div>
     </div>
   );
 }

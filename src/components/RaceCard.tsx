@@ -57,11 +57,11 @@ export default function RaceCard({ race, now }: { race: Race; now: Date }) {
       </div>
 
       {/* 主信息行：赛事名 + 官网 */}
-      <div className="mt-2 flex items-center gap-3">
-        <h3 className="truncate text-xl font-bold tracking-tight text-slate-900 lg:text-2xl">{race.name}</h3>
+      <div className="mt-2 flex flex-wrap items-start gap-x-3 gap-y-1">
+        <h3 className="min-w-0 break-words text-xl font-bold tracking-tight text-slate-900 lg:text-2xl">{race.name}</h3>
         {race.officialSite && (
           <a href={race.officialSite} target="_blank" rel="noreferrer"
-             className="inline-flex shrink-0 items-center text-sm font-medium text-orange-500 hover:text-orange-600 lg:text-base">
+             className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-orange-500 hover:text-orange-600 lg:text-base">
             赛事官网 ↗
           </a>
         )}
