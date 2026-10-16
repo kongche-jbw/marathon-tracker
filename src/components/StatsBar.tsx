@@ -8,8 +8,8 @@ export default function StatsBar({ open, drawing, races, now, deployedAt }: {
   const health: UpdateHealth = healthJson;
   const freshness = summarizeFreshness(races, now);
   const items = [
-    { label: "🔥 报名中赛事", value: open, color: "text-emerald-600" },
-    { label: "🎲 抽签中赛事", value: drawing, color: "text-amber-600" },
+    { label: "🔥 本分区报名中", value: open, color: "text-emerald-600" },
+    { label: "🎲 本分区抽签中", value: drawing, color: "text-amber-600" },
   ];
   return (
     <div>
