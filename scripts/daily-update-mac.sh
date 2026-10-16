@@ -1,11 +1,22 @@
 #!/usr/bin/env bash
 # 本机每日更新：百炼 Token Plan 专属端点只有境内网络可达，所以这条链路由这台 Mac 跑，
 # 不再交给 GitHub Actions 的境外 runner（实测 35 场全部 TCP 超时）。
-# 顺序与 workflow 保持一致：拉最新数据 → 联网复查 → 发布前检测 → 提交推送。
+# 顺序与 workflow 保持一致：拉最新数据 →（可选巡检）→ 联网复查 → 发布前检测 → 提交推送。
 # 任一步失败 → 弹系统通知（本机没有 Actions 的告警 Issue 可用）。
-# 简报默认不跑（每日邮件已停用），要加就带 --with-digest。
+# 简报与新赛事巡检默认都不跑：前者邮件已停用，后者每次多约 10 次千问调用（6~10 万 token）。
+# 要加就带 --with-digest / --with-discover。
 set -euo pipefail
 cd "$(dirname "$0")/.."
+
+DISCOVER=0
+DIGEST=0
+for arg in "$@"; do
+  case "$arg" in
+    --with-discover) DISCOVER=1 ;;
+    --with-digest) DIGEST=1 ;;
+    *) echo "✗ 未知参数：$arg（可用 --with-discover / --with-digest）" >&2; exit 1 ;;
+  esac
+done
 
 LOG_DIR="$HOME/Library/Logs"
 LOG="$LOG_DIR/pbrun-daily-update.log"
@@ -39,20 +50,30 @@ fail() {
   # --autostash：运行时产物之外本机常有未提交的零碎改动，直接 rebase 会硬失败
   git pull --rebase --autostash origin main || fail "同步远端 main 失败"
 
+  # 巡检放在复查之前：新入库的场次当天就能被 update-status 过一遍（与 Actions 原先后顺序一致）
+  if [ "$DISCOVER" = "1" ]; then
+    npx tsx scripts/discover-races.ts || fail "新赛事巡检失败（看上方千问 API 报错）"
+  fi
+
   npx tsx scripts/update-status.ts || fail "联网复查赛事进展失败（看上方千问 API 报错）"
   npx tsx scripts/verify-data.ts || fail "发布前检测未通过，本次不提交"
   git add data/pending-reviews.json
 
   git add data/races.json data/todaySites.json data/update-health.json
   if ! git diff --cached --quiet; then
-    git commit -q -m "chore: 本机更新赛事数据 $(date -u +%F)" || fail "提交失败"
+    if [ "$DISCOVER" = "1" ]; then
+      MSG="chore: 本机巡检并更新赛事数据 $(date -u +%F)"
+    else
+      MSG="chore: 本机更新赛事数据 $(date -u +%F)"
+    fi
+    git commit -q -m "$MSG" || fail "提交失败"
     git push origin main || fail "推送失败，数据只落在本机"
     echo "✅ 已推送数据更新"
   else
     echo "↷ 本次没有数据变化，无需提交"
   fi
 
-  if [ "${1:-}" = "--with-digest" ]; then
+  if [ "$DIGEST" = "1" ]; then
     bash scripts/draft-digest-mac.sh || fail "简报草稿生成失败"
   fi
 

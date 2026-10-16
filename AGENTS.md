@@ -1,16 +1,19 @@
 # marathon-tracker（pbrun.run）—— Agent 操作指南
 
 马拉松赛事追踪网站：单页展示国内/海外马拉松的报名窗口与状态。
-数据源是**纯 JSON 文件（无数据库）**，由**本机 Mac 的定时任务** + 阿里云百炼千问 API 自动维护，前端部署在 Vercel。
+数据源是**纯 JSON 文件（无数据库）**，由**本机 Mac 手动触发**（`bash scripts/daily-update-mac.sh`）+ 阿里云百炼千问 API 维护，前端部署在 Vercel。
 （GitHub Actions 那两个**调 AI** 的 workflow 已停用：套餐专属端点只有境内网络可达，境外 runner 连它一律超时；
-只保留一个不调 AI 的数据新鲜度心跳。）
+只保留一个不调 AI 的数据新鲜度心跳。本机 07:30 的 LaunchAgent 定时也已于 2026-10-11 卸载——
+合盖休眠时系统只给约 40 秒 DarkWake，Wi-Fi/DNS 还没挂上就睡回去，那几天连拉 4 天全灭，改手动触发更可靠。）
 
 ## 数据流（改任何一环前先读这段）
 
 ```
 data/races.json（唯一事实源，约 150 场）
-  ├─ 每日 07:30（北京时间）本机 LaunchAgent → bash scripts/daily-update-mac.sh
-  │    （跑的是运行副本 ~/pbrun/marathon-tracker，原因见下方"定时任务装法"）
+  ├─ 手动触发（2026-10-11 起不再挂 07:30 LaunchAgent）：cd ~/pbrun/marathon-tracker && bash scripts/daily-update-mac.sh
+  │    （在运行副本里跑；脚本第一步自己 git pull，副本不再靠每日定时同步，隔久了代码会旧）
+  │    →（可选）加 --with-discover 先跑 scripts/discover-races.ts 巡检新官宣赛事（约 10 次调用、6~10 万 token，
+  │      Actions 那条每周一/三/六的巡检 workflow 已停用且没并回本机链路，最后入库是 2026-09-30，隔久了页面就没有新赛事）
   │    → scripts/update-status.ts 按 src/lib/schedule.ts 分级调度（每天盯/周检/月检/不再查）联网复查赛事进展
   │    写出：races.json、todaySites.json（本次 AI 新写入的官网）、dateChanges.json（赛期变更，运行时产物不入库）
   │    → scripts/verify-data.ts 发布前检测（不过则不提交）→ 提交并 push 到 main
@@ -32,9 +35,10 @@ cp .env.example .env   # 填入 DASHSCOPE_API_KEY（必需）；RESEND_API_KEY/E
 set -a && source .env && set +a
 npm ci
 npx tsx scripts/update-status.ts --dry-run   # 每日复查（dry-run 不写文件）
-bash scripts/daily-update-mac.sh             # 本机每日更新全流程：拉 main→复查→检测→提交并 push
+bash scripts/daily-update-mac.sh             # 本机更新全流程：拉 main→（可选巡检）→复查→检测→提交并 push
                                              # 加 --with-digest 顺带生成 Mail 草稿简报
-                                             # 定时由 LaunchAgent 负责（见下方安装命令），不要再手动挂 cron
+                                             # 加 --with-discover 顺带跑一段新赛事巡检（想补新赛事就带上，两个开关可同用）
+                                             # 这是唯一的触发方式：07:30 定时已于 2026-10-11 卸载（见上方数据流）
 npx tsx scripts/discover-races.ts --dry-run  # 新赛事巡检
 npx tsx scripts/verify-data.ts               # 发布前检测（字段契约+日期+官网 HTTP 实测）
 npx tsx scripts/email-digest.ts --dry-run    # 简报预览写入 digest-preview.html，不发送
@@ -43,13 +47,17 @@ npx tsx scripts/dedupe-races.ts              # 存量清洗+重复合并（默�
 npm run dev                                   # 本地预览前端
 ```
 
-定时任务装法（换机器或误删时用，plist 备份在 `scripts/` 里）：
+定时任务装法（**当前停用**：2026-10-11 已 `bootout`，并把 `~/Library/LaunchAgents/` 里那份改名为
+`run.pbrun.daily-update.plist.disabled-20261011`；plist 备份也在 `scripts/` 里。
+重挂前先想清楚：合盖 DarkWake 下这条链路必红，要挂就得配合满唤醒 + 等网络重试）：
 
 **为什么副本在 `~/pbrun/marathon-tracker`：** macOS 隐私保护不让 launchd 起的 `/bin/bash` 读
 "文稿"目录（实测静默拒绝、连授权弹窗都没有：`ls`/`head`/`git` 全部 Operation not permitted）。
-所以定时任务用一份位于 `~/pbrun/` 的运行副本，你编辑的那份仍在 `~/Documents/marathon-tracker`。
-两份都指向同一个远端 main：副本每天 `git pull` 取最新代码与数据，你这边推送后次日自动跟上。
-**手改 `data/races.json` 只在你编辑的那份做并推送，别在副本里改**（副本会被次日的 pull 覆盖）。
+所以当时定时任务用一份位于 `~/pbrun/` 的运行副本，你编辑的那份仍在 `~/Documents/marathon-tracker`。
+定时停了两份都还在用：副本仍是手动触发的地方（`~/Documents` 那份在终端里能跑，但两份并行改数据容易撞车，
+统一在副本跑）。两份都指向同一个远端 main：副本在每次触发更新时先 `git pull` 取最新代码与数据，
+你这边推送后、下次触发时跟上（**不再有"次日自动跟上"**，隔久了副本代码就是旧的）。
+**手改 `data/races.json` 只在你编辑的那份做并推送，别在副本里改**（副本会在下次触发的 pull 时被覆盖）。
 
 ```bash
 cp scripts/run.pbrun.daily-update.plist ~/Library/LaunchAgents/
