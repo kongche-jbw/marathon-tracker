@@ -1,4 +1,8 @@
 {
   "lastSuccessfulRun": null,
-  "lastRun": null
+  "lastRun": {
+    "completedAt": "2026-10-16T15:16:25.388Z",
+    "succeeded": 43,
+    "failed": 1
+  }
 }
