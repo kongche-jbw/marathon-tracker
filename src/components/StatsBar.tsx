@@ -2,8 +2,8 @@ export default function StatsBar({ open, drawing, updatedAt }: {
   open: number; drawing: number; updatedAt: string;
 }) {
   const items = [
-    { label: "🔥 报名中赛事", value: open, color: "text-emerald-600" },
-    { label: "🎲 抽签中赛事", value: drawing, color: "text-amber-600" },
+    { label: "🔥 本分区报名中", value: open, color: "text-emerald-600" },
+    { label: "🎲 本分区抽签中", value: drawing, color: "text-amber-600" },
   ];
   return (
     <div>

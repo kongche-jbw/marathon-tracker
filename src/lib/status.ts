@@ -50,9 +50,9 @@ export function sortRaces(races: Race[], now: Date): Race[] {
   return [...races].sort((a, b) => {
     const sa = deriveStatus(a, now), sb = deriveStatus(b, now);
     if (order[sa] !== order[sb]) return order[sa] - order[sb];
-    const keyA = sa === "open" && a.regEnd ? toDate(a.regEnd) : toDate(a.raceDate);
-    const keyB = sb === "open" && b.regEnd ? toDate(b.regEnd) : toDate(b.raceDate);
-    return keyA - keyB;
+    const keyA = sa === "open" ? (a.regEnd ? toDate(a.regEnd) : Infinity) : toDate(a.raceDate);
+    const keyB = sb === "open" ? (b.regEnd ? toDate(b.regEnd) : Infinity) : toDate(b.raceDate);
+    return (keyA - keyB) || toDate(a.raceDate) - toDate(b.raceDate);
   });
 }
 

@@ -79,6 +79,8 @@ export default function RaceCard({ race, now }: { race: Race; now: Date }) {
           <span className={urgent ? "font-bold text-red-600" : "font-semibold text-emerald-600"}>
             报名 {daysLeft === 0 ? "今天截止" : `还剩 ${daysLeft} 天`}
           </span>
+        ) : status === "open" ? (
+          <span>报名截止日期待确认</span>
         ) : race.regStart && race.regEnd ? (
           <span>报名 {race.regStart.slice(5)} 至 {race.regEnd.slice(5)}</span>
         ) : status !== "finished" ? (

@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { Race } from "@/types/race";
-import { deriveStatus, computeStats, daysLeftUntil } from "@/lib/status";
+import { deriveStatus, computeStats } from "@/lib/status";
 import StatsBar from "./StatsBar";
 import FilterBar from "./FilterBar";
 import { DEFAULT_FILTERS, filterRaces, parseRaceView, serializeRaceView, type RaceView } from "@/lib/filters";
 import RaceCard from "./RaceCard";
+import RegistrationList from "./RegistrationList";
 
 const subscribeToUrl = (listener: () => void) => {
   window.addEventListener("popstate", listener);
@@ -21,38 +22,6 @@ const getServerSearch = () => "";
 
 /** 备案号预留位：完成 ICP 备案后填入备案号（如 "京ICP备XXXXXXXX号"），页脚会自动展示 */
 const ICP_NUMBER = "";
-
-/** 置顶横滑卡片：报名中的赛事，附截止倒计时 */
-function OpenCard({ race, now }: { race: Race; now: Date }) {
-  const daysLeft = race.regEnd ? daysLeftUntil(race.regEnd, now) : null;
-  const urgent = daysLeft !== null && daysLeft <= 7;
-  return (
-    <div className={`w-60 shrink-0 snap-start rounded-2xl border bg-white p-4 shadow-sm lg:w-72 lg:p-5 ${
-      urgent ? "border-red-200 ring-1 ring-red-100" : "border-orange-100"
-    }`}>
-      <div className="flex items-center gap-1.5">
-        <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">报名中</span>
-        {daysLeft !== null && (
-          <span className={`ml-auto rounded-md px-2 py-0.5 text-xs font-bold ${
-            urgent ? "bg-red-500 text-white" : "bg-orange-100 text-orange-600"
-          }`}>
-            {daysLeft === 0 ? "今天截止" : `剩 ${daysLeft} 天`}
-          </span>
-        )}
-      </div>
-      <h3 className="mt-2 break-words text-base font-bold text-slate-900 lg:text-lg">{race.name}</h3>
-      <p className="mt-0.5 text-sm text-slate-500 lg:text-base">
-        {race.raceDate.slice(5, 7)}月{race.raceDate.slice(8)}日 · {[race.country === "中国" ? race.province : race.country, race.city].filter(Boolean).join(" ")}
-      </p>
-      {race.officialSite && (
-        <a href={race.officialSite} target="_blank" rel="noreferrer"
-           className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-orange-500 hover:text-orange-600">
-          前往报名 ↗
-        </a>
-      )}
-    </div>
-  );
-}
 
 export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: string }) {
   // 页面是构建时一次性生成的静态页，nowIso 只代表构建那一刻，只用作首屏兜底；
@@ -123,8 +92,7 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
   );
   // 报名雷达：报名中的赛事置顶横滑，按截止紧迫度排序
   const openRaces = useMemo(
-    () => filtered.filter(r => deriveStatus(r, now) === "open")
-      .sort((a, b) => (a.regEnd ?? "").localeCompare(b.regEnd ?? "")),
+    () => filtered.filter(r => deriveStatus(r, now) === "open"),
     [filtered, now],
   );
   // 月份分组：筹备/抽签/已截止的未开赛赛事
@@ -138,6 +106,7 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
       .sort((a, b) => b.raceDate.localeCompare(a.raceDate)),
     [filtered, now],
   );
+  const monthOptions = useMemo(() => [...new Set(filterRaces(races, { tab, filters: { ...filters, month: "" } }, now).map(r => r.raceDate.slice(0, 7)))].sort(), [races, tab, filters, now]);
   const months = useMemo(() => [...new Set(upcoming.map(r => r.raceDate.slice(0, 7)))], [upcoming]);
   const byMonth = useMemo(() => {
     const map = new Map<string, Race[]>();
@@ -181,8 +150,7 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
 
         {/* 先筛选再浏览：手机上无需越过整排报名卡片寻找搜索框。 */}
         <section aria-label="筛选赛事" className="race-filter-toolbar sticky top-0 z-10 -mx-4 mt-4 bg-orange-50/90 px-4 py-2 backdrop-blur-xl">
-          <FilterBar filters={filters} regions={regions} events={events} months={months}
-            monthCounts={month => byMonth.get(month)?.length}
+          <FilterBar filters={filters} regions={regions} events={events} months={monthOptions}
             onChange={patch => setView({ tab, filters: { ...filters, ...patch } }, "keyword" in patch)}
             onReset={resetFilters} />
           <p role="status" aria-live="polite" aria-atomic="true" className="px-1 pt-2 text-xs text-slate-600">
@@ -203,18 +171,7 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
           </section>
         )}
 
-        {/* 报名雷达：正在报名的赛事置顶 */}
-        {openRaces.length > 0 && (
-          <section className="mt-4">
-            <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900 lg:text-xl">
-              🔥 正在报名
-              <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">{openRaces.length}</span>
-            </h2>
-            <div className="-mx-4 mt-3 flex snap-x gap-3 overflow-x-auto px-4 pb-2">
-              {openRaces.map(r => <OpenCard key={r.id} race={r} now={now} />)}
-            </div>
-          </section>
-        )}
+        <RegistrationList races={openRaces} now={now} />
 
         {/* 月份分组列表 */}
         {months.map(m => (

@@ -38,3 +38,23 @@ describe("race discovery filters", () => {
     expect(filterRaces([old], parseRaceView("?quick=all"), now)).toEqual([old]);
   });
 });
+
+describe("月份筛选", () => {
+  it("参数往返、非法月份忽略、重置移除月份", () => {
+    const next = { ...view, filters: { ...DEFAULT_FILTERS, month: "2027-03" } };
+    expect(parseRaceView(serializeRaceView(next))).toEqual(next);
+    expect(parseRaceView("?month=2027-13").filters.month).toBe("");
+    expect(serializeRaceView(view, "month=2027-03")).toBe("");
+  });
+  it("报名中也参与月份筛选，跨年不同月不混入", () => {
+    const next = { ...domestic, id: "next", raceDate: "2027-11-08" };
+    expect(filterRaces([domestic, next], parseRaceView("?status=open&month=2026-11"), now)).toEqual([domestic]);
+    expect(filterRaces([domestic, next], parseRaceView("?month=2027-11"), now)).toEqual([next]);
+    expect(filterRaces([domestic], parseRaceView("?month=2026-12"), now)).toEqual([]);
+  });
+  it("未知截止排在已知截止后，相同条件结果稳定", () => {
+    const dated = { ...domestic, id: "dated", regStart: "2026-10-01", regEnd: "2026-10-20" };
+    const unknown = { ...domestic, id: "unknown", raceDate: "2026-10-19" };
+    expect(filterRaces([unknown, dated], view, now).map(r => r.id)).toEqual(["dated", "unknown"]);
+  });
+});
