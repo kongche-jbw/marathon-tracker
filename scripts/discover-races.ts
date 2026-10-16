@@ -7,11 +7,12 @@
 //     核实不通过（找不到官方公告／日期对不上）→ 直接丢弃不入库，宁可漏收也不收错。
 //
 // 防污染策略：单次最多核实并入库 MAX_ADD 场（历史巡检实测每轮新增 0~5 场，8 场已留足余量）；
-// 官网必须 HTTP 实测可达；category 一律 "B"（标牌等级不轻信 AI，需人工升级）
+// 官网必须 HTTP 实测可达；category 一律 "unknown"（认证级别需人工核验）
 import { readFileSync, writeFileSync } from "fs";
 import type { Race } from "../src/types/race";
 import { deriveStatus, toStoredStatus } from "../src/lib/status";
 import { qwenSearch, logUsage } from "./lib/qwen";
+import { collectSourceHints } from "../src/lib/evidence";
 import { siteReachable } from "./lib/site-reach";
 import { buildWindow, cleanEvents, cleanRegion, cleanText, findDuplicate, screenRace } from "./lib/validation";
 
@@ -50,7 +51,7 @@ const VERIFY_PROMPT = (c: Candidate) =>
   `{"confirmed":true或false,"raceDate":"官方公告的比赛日期 YYYY-MM-DD","regStart":"报名开始日期，非官方确切信息则为空字符串",` +
   `"regEnd":"报名截止日期，非官方确切信息则为空字符串","lotteryDate":"抽签日期，无则为空字符串",` +
   `"events":["全程马拉松","半程马拉松" 等项目],"scale":"规模如 20000人，不确定则空字符串",` +
-  `"officialSite":"赛事官网URL，未知则为空字符串","source":"官方公告来源一句话"}`;
+  `"officialSite":"赛事官网URL，未知则为空字符串","source":"官方公告来源一句话","sourceUrls":["对应官方公告的完整URL；无则空数组"]}`;
 
 interface Candidate {
   name: string; country?: string; province?: string; city?: string;
@@ -58,6 +59,7 @@ interface Candidate {
 }
 
 interface Verified {
+  sourceUrls?: string[];
   confirmed?: boolean; raceDate?: string; regStart?: string; regEnd?: string;
   lotteryDate?: string; events?: string[]; scale?: string; officialSite?: string; source?: string;
 }
@@ -151,7 +153,8 @@ async function main() {
       regStatus: "pending",
       scale: cleanText(v.scale),
       events: events.length ? events : ["全程马拉松"],
-      category: "B", // 标牌等级不轻信 AI，一律 B 类，人工核实后升级
+      category: "unknown", // 未核验认证不能自动标为 B 类
+      sources: collectSourceHints([], v.sourceUrls, now.toISOString()),
       updatedAt: now.toISOString(),
     };
     race.regStatus = toStoredStatus(deriveStatus(race, now));

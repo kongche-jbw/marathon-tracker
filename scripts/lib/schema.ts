@@ -4,6 +4,7 @@
 //   - schema 文件缺失/损坏 → 硬错误（不安全路径必须被拦截，不允许"没有契约就放行"）
 //   - 记录出现契约外字段 → 硬错误（防止 AI/代码写入无人消费的脏字段）
 //   - 必填字段缺失、类型不符 → 硬错误（防止新版本代码读取旧数据时静默丢字段）
+import { validSources, validChannels } from "../../src/lib/evidence";
 import { readFileSync } from "fs";
 
 export interface RaceSchema {
@@ -24,6 +25,8 @@ export function loadSchema(path: string = SCHEMA_PATH): RaceSchema {
 }
 
 function typeOk(value: unknown, spec: string): boolean {
+  if (spec === "RaceSource[]") return validSources(value);
+  if (spec === "RegistrationChannel[]") return validChannels(value);
   if (spec.startsWith("enum:")) return typeof value === "string" && spec.slice(5).split(",").includes(value);
   if (spec === "string[]") return Array.isArray(value) && value.every(v => typeof v === "string");
   if (spec === "boolean") return typeof value === "boolean";
@@ -40,6 +43,7 @@ export function schemaIssues(races: Record<string, unknown>[], schema: RaceSchem
     for (const k of schema.required) {
       if (r[k] === undefined || r[k] === null) errs.push(`${name}: 缺少必填字段 ${k}（schema v${schema.schemaVersion}）`);
     }
+    if (validChannels(r.registrationChannels) && typeof r.raceDate === "string" && r.registrationChannels.some(channel => channel.regEnd && channel.regEnd >= String(r.raceDate))) errs.push(`${name}: 报名通道截止日期不早于比赛日`);
     for (const k of Object.keys(r)) {
       if (!known.has(k)) errs.push(`${name}: 出现契约外字段 ${k}（schema v${schema.schemaVersion}，代码与数据已漂移）`);
       else if (schema.types[k] && !typeOk(r[k], schema.types[k])) errs.push(`${name}: 字段 ${k} 类型不符（期望 ${schema.types[k]}）`);
