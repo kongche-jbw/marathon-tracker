@@ -1,6 +1,12 @@
-export default function StatsBar({ open, drawing, updatedAt }: {
-  open: number; drawing: number; updatedAt: string;
+import type { Race } from "@/types/race";
+import { formatCheckedAt, summarizeFreshness, type UpdateHealth } from "@/lib/freshness";
+import healthJson from "../../data/update-health.json";
+
+export default function StatsBar({ open, drawing, races, now, deployedAt }: {
+  open: number; drawing: number; races: Race[]; now: Date; deployedAt: string;
 }) {
+  const health: UpdateHealth = healthJson;
+  const freshness = summarizeFreshness(races, now);
   const items = [
     { label: "🔥 报名中赛事", value: open, color: "text-emerald-600" },
     { label: "🎲 抽签中赛事", value: drawing, color: "text-amber-600" },
@@ -15,7 +21,18 @@ export default function StatsBar({ open, drawing, updatedAt }: {
           </div>
         ))}
       </div>
-      <div className="mt-2 text-right text-xs text-slate-400">数据更新于 {updatedAt}</div>
+      <details className="mt-3 text-xs leading-6 text-slate-600">
+        <summary className="min-h-11 cursor-pointer py-2">本分区记录最近更新：{formatCheckedAt(freshness.latestRecordAt)}（北京时间）</summary>
+        <p>最近完整更新任务：{formatCheckedAt(health.lastSuccessfulRun)}</p>
+        {health.lastRun && <p>最近发布批次：{formatCheckedAt(health.lastRun.completedAt)} · 成功 {health.lastRun.succeeded} 场 / 失败 {health.lastRun.failed} 场</p>}
+        <p>页面构建：{formatCheckedAt(deployedAt)}，不代表赛事信息已重新核验。</p>
+      </details>
+      {freshness.staleDaily > 0 && (
+        <p role="note" className="mt-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+          {freshness.staleDaily} 场需每日检查的赛事已超过 36 小时未更新或更新时间异常，报名信息待复核，请以官方公告为准。
+        </p>
+      )}
+      {!!health.lastRun?.failed && <p className="mt-2 text-sm text-amber-900">最近发布批次有 {health.lastRun.failed} 场更新失败，已保留原记录。</p>}
     </div>
   );
 }

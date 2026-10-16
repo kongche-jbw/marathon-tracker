@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import type { Race } from "../src/types/race";
 import { deriveStatus, toStoredStatus } from "../src/lib/status";
+import { recordRun, type UpdateHealth } from "../src/lib/freshness";
 import { isDue, summarizePlan } from "../src/lib/schedule";
 import { qwenSearch, logUsage } from "./lib/qwen";
 import { siteReachable } from "./lib/site-reach";
@@ -113,6 +114,12 @@ async function main() {
   console.log(`完成：成功 ${ok}，失败 ${fail}${dateChanges.length ? `，赛期变更 ${dateChanges.length} 场` : ""}`);
   logUsage(`每日复查${LIMIT > 0 ? `（样本 ${targets.length} 场）` : ""}`);
   if (!DRY) {
+    // 抽样不推进全量任务状态；只有随发布前检测通过并推送的批次才会出现在网站。
+    if (!LIMIT) {
+      const healthPath = "data/update-health.json";
+      const previous = JSON.parse(readFileSync(healthPath, "utf8")) as UpdateHealth;
+      writeFileSync(healthPath, JSON.stringify(recordRun(previous, ok, fail, new Date().toISOString()), null, 2) + "\n");
+    }
     if (ok > 0) writeFileSync(path, JSON.stringify(races, null, 2));
     // 告知发布前检测：哪些官网是本次 AI 新写入的（需严格把关），其余为历史已核实官网（故障仅警告）
     writeFileSync("data/todaySites.json", JSON.stringify([...aiSites], null, 2));

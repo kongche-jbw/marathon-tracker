@@ -1,4 +1,5 @@
 import type { Race, DisplayStatus } from "@/types/race";
+import { formatCheckedAt } from "@/lib/freshness";
 import { deriveStatus, daysLeftUntil } from "@/lib/status";
 
 const STATUS_STYLE: Record<DisplayStatus, { label: string; cls: string }> = {
@@ -35,6 +36,7 @@ export default function RaceCard({ race, now }: { race: Race; now: Date }) {
     race.scale && `规模 ${race.scale}`,
     race.lotteryDate && `抽签 ${race.lotteryDate.slice(5)}`,
     race.fee,
+    `记录更新 ${formatCheckedAt(race.updatedAt)}（北京时间）`,
   ].filter(Boolean);
 
   const dateLabel = `${race.raceDate.slice(5, 7)}月${race.raceDate.slice(8)}日`;

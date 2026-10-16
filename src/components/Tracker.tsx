@@ -98,12 +98,6 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
   const tabRaces = tab === "domestic" ? domestic : international;
 
   const stats = useMemo(() => computeStats(tabRaces, now), [tabRaces, now]);
-  // 显示口径：网站最近一次部署时间（静态构建时间），与访客本机的 now 无关
-  const updatedAt = useMemo(() => {
-    const s = new Date(new Date(nowIso).getTime() + 8 * 3600000).toISOString();
-    return s.slice(0, 16).replace("T", " ");
-  }, [nowIso]);
-
   const regions = useMemo(() => {
     const set = new Set<string>();
     for (const r of tabRaces) {
@@ -177,7 +171,7 @@ export default function Tracker({ races, nowIso }: { races: Race[]; nowIso: stri
             </button>
           ))}
         </div>
-        <StatsBar open={stats.open} drawing={stats.drawing} updatedAt={updatedAt} />
+        <StatsBar open={stats.open} drawing={stats.drawing} races={tabRaces} now={now} deployedAt={nowIso} />
 
         {/* 先筛选再浏览：手机上无需越过整排报名卡片寻找搜索框。 */}
         <section aria-label="筛选赛事" className="race-filter-toolbar sticky top-0 z-10 -mx-4 mt-4 bg-orange-50/90 px-4 py-2 backdrop-blur-xl">
