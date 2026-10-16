@@ -26,6 +26,19 @@ describe("来源与报名通道契约", () => {
     for (const patch of [{ verifiedAt: undefined }, { sourceUrl: "javascript:x" }, { status: "maybe" }, { regEnd: "2026-02-30" }, { regStart: "2026-10-01" }]) expect(validChannels([{ ...channel, ...patch }])).toBe(false);
     expect(validChannels([channel, { ...channel, url: "https://example.org/another" }])).toBe(false);
   });
+  it("公众号/小程序报名可无网址，用报名指引代替；url 与指引至少其一", () => {
+    const wechat: RegistrationChannel = { name: "普通报名", kind: "general", entranceType: "wechat_official", entranceHint: "微信搜索'测试赛事'公众号→菜单栏报名", sourceUrl: "https://example.org/notice", verifiedAt: now.toISOString(), status: "open" };
+    expect(validChannels([wechat])).toBe(true);
+    // 既无 url 又无指引 → 拒绝
+    const noUrl: RegistrationChannel = { name: "普通报名", kind: "general", sourceUrl: "https://example.org/notice", verifiedAt: now.toISOString(), status: "closed" };
+    expect(validChannels([noUrl])).toBe(false);
+    // 空指引、非法入口类型 → 拒绝
+    expect(validChannels([{ ...wechat, entranceHint: "   " }])).toBe(false);
+    expect(validChannels([{ ...wechat, entranceType: "carrier_pigeon" }])).toBe(false);
+    // 指引型通道也按 name+指引 去重
+    expect(validChannels([wechat, { ...wechat }])).toBe(false);
+    expect(validChannels([wechat, { ...wechat, kind: "charity" as const, name: "慈善名额", entranceHint: "另一条指引" }])).toBe(true);
+  });
   it("schema v2 向后兼容旧赛事，同时严格校验新增嵌套字段", () => {
     const schema = loadSchema();
     expect(schema.schemaVersion).toBe(2);
