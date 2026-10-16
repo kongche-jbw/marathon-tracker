@@ -41,6 +41,7 @@ fail() {
 
   npx tsx scripts/update-status.ts || fail "联网复查赛事进展失败（看上方千问 API 报错）"
   npx tsx scripts/verify-data.ts || fail "发布前检测未通过，本次不提交"
+  git add data/pending-reviews.json
 
   git add data/races.json data/todaySites.json
   if ! git diff --cached --quiet; then

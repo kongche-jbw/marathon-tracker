@@ -1,0 +1,45 @@
+import type { RaceSource, RegistrationChannel } from "@/types/race";
+
+export function isHttpUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return ["https:", "http:"].includes(url.protocol) && !!url.hostname && !url.username && !url.password;
+  } catch { return false; }
+}
+const timestamp = (value: unknown) => typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value));
+export function isCalendarDate(value: unknown): value is string {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
+}
+const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
+
+export function validSources(value: unknown): value is RaceSource[] {
+  return Array.isArray(value) && value.every(source => object(source)
+    && Object.keys(source).every(key => ["url", "observedAt", "scope", "verifiedAt"].includes(key))
+    && isHttpUrl(source.url) && timestamp(source.observedAt)
+    && ["general", "raceDate", "registration", "category"].includes(String(source.scope))
+    && (source.verifiedAt === undefined || timestamp(source.verifiedAt)));
+}
+
+export function validChannels(value: unknown): value is RegistrationChannel[] {
+  if (!Array.isArray(value)) return false;
+  const valid = value.every(channel => object(channel)
+    && Object.keys(channel).every(key => ["name", "kind", "url", "sourceUrl", "verifiedAt", "status", "regStart", "regEnd", "requirements"].includes(key))
+    && typeof channel.name === "string" && !!channel.name.trim()
+    && ["general", "charity", "tour"].includes(String(channel.kind))
+    && isHttpUrl(channel.url) && isHttpUrl(channel.sourceUrl) && timestamp(channel.verifiedAt)
+    && ["pending", "open", "drawing", "closed", "finished"].includes(String(channel.status))
+    && (channel.regStart === undefined || isCalendarDate(channel.regStart))
+    && (channel.regEnd === undefined || isCalendarDate(channel.regEnd))
+    && (!channel.regStart || !channel.regEnd || String(channel.regStart) <= String(channel.regEnd))
+    && (channel.requirements === undefined || typeof channel.requirements === "string"));
+  return valid && value.filter(channel => channel.kind === "general").length <= 1
+    && new Set(value.map(channel => channel.url)).size === value.length;
+}
+
+/** 模型给出的 URL 不等同于供应商检索证据，也不能提升成人工核验。 */
+export function collectSourceHints(previous: RaceSource[] = [], urls: unknown, observedAt: string): RaceSource[] {
+  const hints = Array.isArray(urls) ? [...new Set(urls.filter(isHttpUrl))].slice(0, 5) : [];
+  return [...previous, ...hints.filter(url => !previous.some(source => source.url === url))
+    .map(url => ({ url, observedAt, scope: "general" as const }))];
+}

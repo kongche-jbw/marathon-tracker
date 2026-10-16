@@ -15,11 +15,19 @@ export function daysLeftUntil(dateStr: string, now: Date): number {
   return Math.max(0, beijingDayIndex(toDate(dateStr)) - beijingDayIndex(now.getTime()));
 }
 
+/** 已维护通道时，汇总状态仅代表普通报名；慈善/旅行通道不借用其状态。 */
+export function withGeneralRegistration(race: Race): Race {
+  const general = race.registrationChannels?.find(channel => channel.kind === "general");
+  if (general) return { ...race, regStart: general.regStart, regEnd: general.regEnd, regStatus: general.status };
+  return race.registrationChannels?.length ? { ...race, regStart: undefined, regEnd: undefined, regStatus: "pending" } : race;
+}
+
 /**
  * 根据日期字段推导展示状态（数据管道的 regStatus 仅作为无日期字段时的兜底）。
  * 比赛日当天不算已结束：按自然日比较，当天是「today」，次日零点起才是「finished」。
  */
 export function deriveStatus(race: Race, now: Date): DisplayStatus {
+  race = withGeneralRegistration(race);
   const t = now.getTime();
   const dayGap = beijingDayIndex(toDate(race.raceDate)) - beijingDayIndex(t);
   if (dayGap < 0) return "finished";
@@ -31,7 +39,7 @@ export function deriveStatus(race: Race, now: Date): DisplayStatus {
   if (!race.regStart || !race.regEnd) return race.regStatus === "finished" ? "pending" : race.regStatus;
   const s = toDate(race.regStart), e = toDate(race.regEnd);
   if (t < s) return "pending";
-  if (t <= e + day) return "open";
+  if (t < e + day) return "open";
   // 报名已截止
   if (race.needLottery && race.lotteryDate && toDate(race.lotteryDate) >= t - 3 * day) return "drawing";
   return "closed";
@@ -48,6 +56,8 @@ export const toStoredStatus = (s: DisplayStatus): RegStatus => (s === "today" ? 
 /** open 按报名截止紧迫度升序，其余按比赛日期升序 */
 export function sortRaces(races: Race[], now: Date): Race[] {
   return [...races].sort((a, b) => {
+    a = withGeneralRegistration(a);
+    b = withGeneralRegistration(b);
     const sa = deriveStatus(a, now), sb = deriveStatus(b, now);
     if (order[sa] !== order[sb]) return order[sa] - order[sb];
     const keyA = sa === "open" && a.regEnd ? toDate(a.regEnd) : toDate(a.raceDate);

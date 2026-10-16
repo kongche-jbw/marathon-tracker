@@ -1,3 +1,5 @@
+import { withGeneralRegistration } from "@/lib/status";
+import RaceEvidence from "./RaceEvidence";
 import type { Race, DisplayStatus } from "@/types/race";
 import { deriveStatus, daysLeftUntil } from "@/lib/status";
 
@@ -11,6 +13,7 @@ const STATUS_STYLE: Record<DisplayStatus, { label: string; cls: string }> = {
 };
 
 const CATEGORY_STYLE: Record<Race["category"], { label: string; cls: string }> = {
+  unknown: { label: "认证待核验", cls: "bg-slate-100 text-slate-600" },
   A: { label: "A类", cls: "bg-amber-50 text-amber-700" },
   B: { label: "B类", cls: "bg-blue-50 text-blue-700" },
   platinum: { label: "白金标", cls: "bg-slate-800 text-white" },
@@ -19,6 +22,7 @@ const CATEGORY_STYLE: Record<Race["category"], { label: string; cls: string }> =
 };
 
 export default function RaceCard({ race, now }: { race: Race; now: Date }) {
+  race = withGeneralRegistration(race);
   const status = deriveStatus(race, now);
   const st = STATUS_STYLE[status];
   const cat = CATEGORY_STYLE[race.category];
@@ -44,8 +48,8 @@ export default function RaceCard({ race, now }: { race: Race; now: Date }) {
       urgent ? "border-red-300 ring-1 ring-red-200" : "border-slate-200"
     }`}>
       <div className="flex flex-wrap items-center gap-2">
-        <span className={`rounded-md border px-2 py-0.5 text-xs font-semibold lg:text-sm ${st.cls}`}>{st.label}</span>
-        <span className={`rounded px-1.5 py-0.5 text-xs font-medium lg:text-sm ${cat.cls}`}>{cat.label}</span>
+        <span className={`rounded-md border px-2 py-0.5 text-xs font-semibold lg:text-sm ${st.cls}`}>{status === "pending" && race.registrationChannels?.length && !race.registrationChannels.some(channel => channel.kind === "general") ? "普通报名待核验" : st.label}</span>
+        <span className={`rounded px-1.5 py-0.5 text-xs font-medium lg:text-sm ${cat.cls}`}>{race.category === "B" && !race.sources?.some(source => source.scope === "category" && source.verifiedAt) ? "B类（待核验）" : cat.label}</span>
         {race.needLottery && (
           <span className="rounded-md bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 lg:text-sm">需抽签</span>
         )}
@@ -82,7 +86,7 @@ export default function RaceCard({ race, now }: { race: Race; now: Date }) {
         ) : race.regStart && race.regEnd ? (
           <span>报名 {race.regStart.slice(5)} 至 {race.regEnd.slice(5)}</span>
         ) : status !== "finished" ? (
-          <span>报名时间暂未公布</span>
+          <span>报名日期待确认</span>
         ) : null}
       </div>
 
@@ -90,6 +94,7 @@ export default function RaceCard({ race, now }: { race: Race; now: Date }) {
       {details.length > 0 && (
         <p className="mt-1.5 text-xs text-slate-400 lg:text-sm">{details.join(" · ")}</p>
       )}
+      <RaceEvidence race={race} now={now} />
     </div>
   );
 }

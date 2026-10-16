@@ -2,12 +2,14 @@
 // 查哪几场由 src/lib/schedule.ts 的分级调度决定（带单元测试），原则只有一条：
 // 不可能再发生变化的赛事永不再查 —— 赛期已过／报名已截止且临近开赛的，一次 token 也不花。
 // 新赛事的发现交给每周三次的新赛事巡检任务，不由本脚本承担。
-import { readFileSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import type { Race } from "../src/types/race";
 import { deriveStatus, toStoredStatus } from "../src/lib/status";
 import { isDue, summarizePlan } from "../src/lib/schedule";
 import { qwenSearch, logUsage } from "./lib/qwen";
 import { siteReachable } from "./lib/site-reach";
+import { collectSourceHints } from "../src/lib/evidence";
+import { proposeDate, type DateProposal } from "./lib/date-review";
 import { dateConflict, validYear } from "./lib/validation";
 
 const DRY = process.argv.includes("--dry-run");
@@ -26,22 +28,15 @@ const PROMPT = (r: Race) =>
   `如果找不到确切的官方报名日期，对应字段必须返回空字符串。只返回一个 JSON 对象，不要包含其他文字：` +
   `{"regStart":"报名开始日期 YYYY-MM-DD，非官方确切信息则为空字符串","regEnd":"报名截止日期 YYYY-MM-DD，非官方确切信息则为空字符串",` +
   `"regStatus":"pending|open|drawing|closed|finished 之一","lotteryDate":"抽签日期 YYYY-MM-DD，无则为空字符串",` +
-  `"raceDate":"核实后的比赛日期 YYYY-MM-DD","officialSite":"赛事官网URL，未知则为空字符串","note":"一句话摘要，注明来源"}`;
+  `"raceDate":"核实后的比赛日期 YYYY-MM-DD","officialSite":"赛事官网URL，未知则为空字符串","note":"一句话摘要，注明来源","sourceUrls":["对应官方公告的完整URL；没有可用链接则返回空数组"]}`;
 
 const VALID_STATUS = new Set(["pending", "open", "drawing", "closed", "finished"]);
 
-// 赛期变更的依据是否站得住：AI 没给来源、或自陈"未检索到官方公告"，都算依据不足。
-// 实测 2026-10-06 黄冈半程马拉松被按"湖北下半年赛事日历聚合信息"改了期，
-// 而它自己写的 note 就是"未检索到……官方公告原文"——日期变了却没有任何官方依据。
-// 硬纪律 6 要求赛期以官方公告为准，所以这种情况一律不动库内日期，只在日志里留痕待人工跟。
-const WEAK_EVIDENCE = /未(检索|查找|查询|查到|找到)|无官方|没有官方/;
-function weakEvidence(note: string): boolean {
-  return !note.trim() || WEAK_EVIDENCE.test(note);
-}
-
+// 模型说明和链接只作为候选线索；赛期变更一律经人工读取公告后复核。
 async function main() {
   const path = "data/races.json";
   const races = JSON.parse(readFileSync(path, "utf8")) as Race[];
+  const pending: DateProposal[] = existsSync("data/pending-reviews.json") ? JSON.parse(readFileSync("data/pending-reviews.json", "utf8")) : [];
   const due = races.filter(r => isDue(r, now));
   const targets = LIMIT > 0 ? due.slice(0, LIMIT) : due;
   const buckets = summarizePlan(races, now);
@@ -49,25 +44,26 @@ async function main() {
   console.log(`  分级：每天盯 ${buckets.daily} 场｜周检 ${buckets.weekly} 场｜月检 ${buckets.monthly} 场｜已尘埃落定不再查 ${buckets.never} 场`);
   let ok = 0, fail = 0;
   const aiSites = new Set<string>(); // 本次由 AI 新写入/替换的官网，发布前检测对其严格把关
-  // 赛期被 AI 改动的记录：自动应用，但全部写进当日简报供人工扫一眼（防止错改静默生效）
-  const dateChanges: { name: string; from: string; to: string; note: string }[] = [];
   for (const r of targets) {
     try {
       const parsed = JSON.parse(await qwenSearch(PROMPT(r)));
       const oldDate = r.raceDate;
       const note = typeof parsed.note === "string" ? parsed.note : "";
-      let discarded = false; // 本场是否丢弃过 AI 的日期字段
-      // 赛期先落，其余日期再按新赛期校验。每个字段单独试写，自相矛盾的那一个丢弃：
+      const sources = collectSourceHints(r.sources, parsed.sourceUrls, now.toISOString());
+      if (sources.length) r.sources = sources;
+      const proposal = proposeDate(r, parsed.raceDate, parsed.sourceUrls, note, now.toISOString());
+      if (proposal && !pending.some(item => item.id === proposal.id)) pending.push(proposal);
+      const datePending = typeof parsed.raceDate === "string" && !!parsed.raceDate && parsed.raceDate !== oldDate;
+      if (datePending) console.log(`  ⚠ 赛期候选待复核：${r.name} ${oldDate} → ${parsed.raceDate}（未应用）`);
+      let discarded = datePending; // 本场是否丢弃过 AI 的日期字段
+      // 改期待复核时不接收基于新赛期的报名日期/状态；其余仍逐字段校验：
       // 实测 2026-10-06 AI 把泰宁半程马拉松的报名截止填成比赛日，一条口误就让整批
       // 332 场卡在售前检测外、当天完全停更（门禁该挡的是脏数据入库，不是拖垮全量）。
-      for (const k of ["raceDate", "regStart", "regEnd", "lotteryDate"] as const) {
+      for (const k of ["regStart", "regEnd", "lotteryDate"] as const) {
+        if (datePending) break;
         const v = parsed[k];
         // AI 返回空字符串：保留原值，不用空值覆盖已有数据
         if (typeof v !== "string" || !v || !validYear(v, r.raceDate)) continue;
-        if (k === "raceDate" && v !== oldDate && weakEvidence(note)) {
-          console.log(`  ⚠ 赛期变更未采纳: ${r.name} ${oldDate} → ${v}（依据不足：${note || "AI 未注明来源"}）`);
-          continue;
-        }
         const before = r[k];
         (r as unknown as Record<string, unknown>)[k] = v;
         const bad = dateConflict(r);
@@ -76,10 +72,6 @@ async function main() {
           discarded = true;
           console.log(`  ⚠ 丢弃 AI ${k}=${v}：${bad}（该场其余字段照常采用）`);
         }
-      }
-      if (r.raceDate !== oldDate) {
-        dateChanges.push({ name: r.name, from: oldDate, to: r.raceDate, note });
-        console.log(`  ⚠ 赛期变更: ${r.name} ${oldDate} → ${r.raceDate}（${note}）`);
       }
       const status = parsed.regStatus;
       // 日期都填不对的一场，它报的状态同样不可信（泰宁：截止=比赛日，却又说报名中）
@@ -110,14 +102,15 @@ async function main() {
       console.error(`✗ ${r.name}: ${(e as Error).message}`); // 单场失败保留旧数据
     }
   }
-  console.log(`完成：成功 ${ok}，失败 ${fail}${dateChanges.length ? `，赛期变更 ${dateChanges.length} 场` : ""}`);
+  console.log(`完成：成功 ${ok}，失败 ${fail}，待复核赛期候选 ${pending.length} 条`);
   logUsage(`每日复查${LIMIT > 0 ? `（样本 ${targets.length} 场）` : ""}`);
   if (!DRY) {
     if (ok > 0) writeFileSync(path, JSON.stringify(races, null, 2));
     // 告知发布前检测：哪些官网是本次 AI 新写入的（需严格把关），其余为历史已核实官网（故障仅警告）
     writeFileSync("data/todaySites.json", JSON.stringify([...aiSites], null, 2));
-    // 赛期变更清单：供当日简报邮件渲染，同一 job 内直接读盘，无需入库
-    writeFileSync("data/dateChanges.json", JSON.stringify(dateChanges, null, 2));
+    writeFileSync("data/pending-reviews.json", JSON.stringify(pending, null, 2) + "\n");
+    // 兼容旧简报：本脚本不再自动应用赛期变更，审批历史见 review-history.json。
+    writeFileSync("data/dateChanges.json", "[]");
   }
   if (ok === 0 && fail > 0) process.exit(1); // 全部失败 → Actions 标记失败，不提交坏数据
 }

@@ -1,3 +1,4 @@
+import { withGeneralRegistration } from "./status";
 import type { Race } from "@/types/race";
 
 const DAY = 86400000;
@@ -21,6 +22,7 @@ const CLOSED_GRACE_DAYS = 21;
  * 一旦彻底停查，站点会在赛期前一直显示「已截止」而实际还能报名。
  */
 export function checkInterval(race: Race, now: Date): number | null {
+  race = withGeneralRegistration(race);
   if (race.regStatus === "finished") return null;
   const raceT = cst(race.raceDate);
   if (Number.isNaN(raceT) || raceT < now.getTime()) return null; // 坏日期不重试，避免天天白烧

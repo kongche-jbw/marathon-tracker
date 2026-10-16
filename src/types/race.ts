@@ -1,7 +1,7 @@
 export type RegStatus = "pending" | "open" | "drawing" | "closed" | "finished";
 /** 前端展示状态：比数据管道多一个"今天比赛"，比赛日当天不算已结束 */
 export type DisplayStatus = RegStatus | "today";
-export type RaceCategory = "A" | "B" | "platinum" | "gold" | "major";
+export type RaceCategory = "A" | "B" | "platinum" | "gold" | "major" | "unknown";
 
 export interface Race {
   id: string;              // 唯一标识，如 "beijing-marathon"
@@ -22,5 +22,26 @@ export interface Race {
   fee?: string;            // 费用说明
   category: RaceCategory;
   officialSite?: string;
+  sources?: RaceSource[];
+  registrationChannels?: RegistrationChannel[];
   updatedAt: string;       // ISO 时间戳
+}
+
+export interface RaceSource {
+  url: string;
+  observedAt: string;
+  scope: "general" | "raceDate" | "registration" | "category";
+  verifiedAt?: string; // 仅人工核验后填写；缺失时只是模型提供的线索
+}
+
+export interface RegistrationChannel {
+  name: string;
+  kind: "general" | "charity" | "tour";
+  url: string;
+  sourceUrl: string;
+  verifiedAt: string; // 通道必须人工核验后入库，不由 AI 直接写入
+  status: RegStatus;
+  regStart?: string;
+  regEnd?: string;
+  requirements?: string;
 }
