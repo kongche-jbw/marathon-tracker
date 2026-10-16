@@ -60,8 +60,8 @@ launchctl kickstart -k gui/$(id -u)/run.pbrun.daily-update    # 立刻试跑一�
 
 ## 校验与门禁
 
-- `npm run lint` / `npx tsc --noEmit` / `npm test`（vitest：schedule、status、validation、schema 契约）。
-  PR 合入由 `.github/workflows/ci.yml` 强制跑这三项。
+- `npm run lint` / `npm run typecheck` / `npm test` / `npm run build`（vitest：schedule、status、validation、schema 契约）。
+  PR 合入由 `.github/workflows/ci.yml` 跑上述四项（typecheck 先生成 Next.js 路由类型）。
 - 数据字段契约在 `data/schema.json`：**给 Race 增删字段必须同步改 schema.json 并 bump schemaVersion**，
   否则 verify-data.ts 会拦截发布（脏字段/缺必填/类型不符均硬错误）。
 - 共享实现收敛在 `scripts/lib/`：`site-reach.ts`（官网可达判定，三脚本共用，勿再各写一份）、
