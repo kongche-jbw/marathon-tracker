@@ -40,7 +40,7 @@ jobs:
           git add data/pending-reviews.json
           git config user.name "marathon-bot"
           git config user.email "marathon-bot@users.noreply.github.com"
-          git add data/races.json data/todaySites.json
+          git add data/races.json data/todaySites.json data/update-health.json
           git diff --cached --quiet || git commit -m "chore: 更新赛事数据 $(date -u +%F)"
           git push
 

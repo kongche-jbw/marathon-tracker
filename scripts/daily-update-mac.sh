@@ -43,7 +43,7 @@ fail() {
   npx tsx scripts/verify-data.ts || fail "发布前检测未通过，本次不提交"
   git add data/pending-reviews.json
 
-  git add data/races.json data/todaySites.json
+  git add data/races.json data/todaySites.json data/update-health.json
   if ! git diff --cached --quiet; then
     git commit -q -m "chore: 本机更新赛事数据 $(date -u +%F)" || fail "提交失败"
     git push origin main || fail "推送失败，数据只落在本机"
