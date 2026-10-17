@@ -44,6 +44,7 @@ async function main() {
   console.log(`待更新 ${due.length}/${races.length} 场${LIMIT > 0 ? `（本次限制只查前 ${targets.length} 场）` : ""}${DRY ? "（dry-run，不写文件）" : ""}`);
   console.log(`  分级：每天盯 ${buckets.daily} 场｜周检 ${buckets.weekly} 场｜月检 ${buckets.monthly} 场｜已尘埃落定不再查 ${buckets.never} 场`);
   let ok = 0, fail = 0;
+  const failedNames: string[] = [];
   const aiSites = new Set<string>(); // 本次由 AI 新写入/替换的官网，发布前检测对其严格把关
   for (const r of targets) {
     try {
@@ -100,6 +101,7 @@ async function main() {
       console.log(`✓ ${r.name}`);
     } catch (e) {
       fail++;
+      failedNames.push(r.name);
       console.error(`✗ ${r.name}: ${(e as Error).message}`); // 单场失败保留旧数据
     }
   }
@@ -110,7 +112,7 @@ async function main() {
     if (!LIMIT) {
       const healthPath = "data/update-health.json";
       const previous = JSON.parse(readFileSync(healthPath, "utf8")) as UpdateHealth;
-      writeFileSync(healthPath, JSON.stringify(recordRun(previous, ok, fail, new Date().toISOString()), null, 2) + "\n");
+      writeFileSync(healthPath, JSON.stringify(recordRun(previous, ok, fail, new Date().toISOString(), failedNames), null, 2) + "\n");
     }
     if (ok > 0) writeFileSync(path, JSON.stringify(races, null, 2));
     // 告知发布前检测：哪些官网是本次 AI 新写入的（需严格把关），其余为历史已核实官网（故障仅警告）
