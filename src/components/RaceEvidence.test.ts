@@ -21,3 +21,9 @@ it("慈善通道明确说明报名类型和资格条件", () => {
   const html = renderToStaticMarkup(createElement(RaceEvidence, { race: item, now }));
   expect(html).toContain("查看慈善名额入口"); expect(html).toContain("需完成最低筹款额度"); expect(html).toContain("核验公告");
 });
+it("公众号报名无网址时显示报名指引而非入口链接，且不显示暂无通道提示", () => {
+  const item: Race = { ...race, registrationChannels: [{ name: "普通报名", kind: "general", status: "open", entranceType: "wechat_official", entranceHint: "微信搜索'测试赛事'公众号→菜单栏报名", sourceUrl: "https://example.org/notice", verifiedAt: now.toISOString() }] };
+  const html = renderToStaticMarkup(createElement(RaceEvidence, { race: item, now }));
+  expect(html).toContain("报名方式：微信公众号"); expect(html).toContain("菜单栏报名"); expect(html).toContain("核验公告");
+  expect(html).not.toContain("暂无已核验");
+});

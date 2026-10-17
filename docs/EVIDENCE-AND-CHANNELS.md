@@ -27,7 +27,11 @@ npx tsx scripts/review-date.ts --id='赛事ID:原日期:目标日期' --source='
 
 ## 人工维护报名通道
 
-registrationChannels 为可选数组。每个通道必须包含 name、kind（general 普通 / charity 慈善 / tour 旅行）、url（直接入口）、sourceUrl（核验公告）、verifiedAt（人工核验时间）、status。regStart、regEnd、requirements 可选，未知日期省略。最多一个普通通道，同一入口不可重复，截止不能晚于或等于比赛日。
+registrationChannels 为可选数组。每个通道必须包含 name、kind（general 普通 / charity 慈善 / tour 旅行）、sourceUrl（核验公告）、verifiedAt（人工核验时间）、status。regStart、regEnd、requirements 可选，未知日期省略。最多一个普通通道，同一入口不可重复，截止不能晚于或等于比赛日。
+
+报名入口支持两种形态，二者至少其一（中国大量赛事只在微信公众号/小程序/第三方平台报名，没有独立官网网址）：
+- url：直接报名入口的 http(s) 网址；填写时不得用官网首页冒充报名页。
+- entranceType + entranceHint：无网址时用报名指引代替。entranceType 取 website / wechat_official / wechat_miniprogram / app / platform；entranceHint 是一句可操作的指引，如“微信搜索‘肇庆马拉松’公众号→菜单栏报名”。既无 url 又无 entranceHint 的通道不通过校验。无 url 通道按 name+entranceHint 去重。
 
 这些字段不由模型自动写入。人工读过赛事当届公告、确认名额类型和资格要求后，才可将通道写入赛事并通过 schema 校验。慈善筹款、旅行套餐等要求应写入 requirements，页面单独展示；官网首页仍只叫“赛事官网”。不要仅凭首页可访问就填成直接报名入口。
 
