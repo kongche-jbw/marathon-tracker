@@ -10,7 +10,7 @@ import { isDue, summarizePlan } from "../src/lib/schedule";
 import { qwenSearch, logUsage } from "./lib/qwen";
 import { siteReachable } from "./lib/site-reach";
 import { collectSourceHints } from "../src/lib/evidence";
-import { proposeDate, type DateProposal } from "./lib/date-review";
+import { proposeDate, proposalId, type DateProposal } from "./lib/date-review";
 import { dateConflict, validYear } from "./lib/validation";
 
 const DRY = process.argv.includes("--dry-run");
@@ -38,6 +38,11 @@ async function main() {
   const path = "data/races.json";
   const races = JSON.parse(readFileSync(path, "utf8")) as Race[];
   const pending: DateProposal[] = existsSync("data/pending-reviews.json") ? JSON.parse(readFileSync("data/pending-reviews.json", "utf8")) : [];
+  // 人工驳回过的候选不再重复入队：驳回只清队列、不改库里的 raceDate，下一轮模型必再提同一个日期
+  // （2026-10-31 实测，伦敦 2027 那条 10-30 驳回、10-31 原样长回队列）。
+  // 历史里没有 decision 字段的条目都是「已采纳」，不参与跳过判断。
+  const rejectedIds = new Set<string>(((existsSync("data/review-history.json") ? JSON.parse(readFileSync("data/review-history.json", "utf8")) : []) as { id?: string; decision?: string }[])
+    .filter(item => item.decision === "rejected" && item.id).map(item => item.id!));
   const due = races.filter(r => isDue(r, now));
   const targets = LIMIT > 0 ? due.slice(0, LIMIT) : due;
   const buckets = summarizePlan(races, now);
@@ -53,10 +58,12 @@ async function main() {
       const note = typeof parsed.note === "string" ? parsed.note : "";
       const sources = collectSourceHints(r.sources, parsed.sourceUrls, now.toISOString());
       if (sources.length) r.sources = sources;
-      const proposal = proposeDate(r, parsed.raceDate, parsed.sourceUrls, note, now.toISOString());
+      const proposal = proposeDate(r, parsed.raceDate, parsed.sourceUrls, note, now.toISOString(), rejectedIds);
       if (proposal && !pending.some(item => item.id === proposal.id)) pending.push(proposal);
       const datePending = typeof parsed.raceDate === "string" && !!parsed.raceDate && parsed.raceDate !== oldDate;
-      if (datePending) console.log(`  ⚠ 赛期候选待复核：${r.name} ${oldDate} → ${parsed.raceDate}（未应用）`);
+      if (datePending) console.log(rejectedIds.has(proposalId(r.id, oldDate, String(parsed.raceDate)))
+        ? `  ⚠ 赛期候选已人工定案，不再入队：${r.name} ${oldDate} → ${parsed.raceDate}`
+        : `  ⚠ 赛期候选待复核：${r.name} ${oldDate} → ${parsed.raceDate}（未应用）`);
       let discarded = datePending; // 本场是否丢弃过 AI 的日期字段
       // 改期待复核时不接收基于新赛期的报名日期/状态；其余仍逐字段校验：
       // 实测 2026-10-06 AI 把泰宁半程马拉松的报名截止填成比赛日，一条口误就让整批
