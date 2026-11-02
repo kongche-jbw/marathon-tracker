@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { collectSourceHints, isCalendarDate, isHttpUrl, siteAsSource, validChannels, validSources } from "./evidence";
+import { collectSourceHints, isCalendarDate, isHttpUrl, siteAsSource, unrecordedLine, validChannels, validSources } from "./evidence";
 import { deriveStatus, withGeneralRegistration } from "./status";
 import { schemaIssues, loadSchema } from "../../scripts/lib/schema";
 import type { Race, RegistrationChannel } from "@/types/race";
@@ -95,5 +95,32 @@ describe("siteAsSource：官网并入来源、不单独成行", () => {
   it("缺链接或非法链接 -> null，不生成假链接", () => {
     expect(siteAsSource(race)).toBeNull();
     expect(siteAsSource({ ...race, officialSite: "javascript:alert(1)" })).toBeNull();
+  });
+});
+
+// 2026-11-02 定的缺失口径：库里没有值就点名缺哪一项，一律「未收录」；
+// 「待核验」仍专指 AI 给了值但人还没读公告，两种语义不许混。
+describe("unrecordedLine：缺失信息统一说「未收录」", () => {
+  const site = "https://example.org/site";
+  const wechat: RegistrationChannel = { name: "普通报名", kind: "general", entranceType: "wechat_official", entranceHint: "微信搜索'测试赛事'公众号→菜单栏报名", sourceUrl: "https://example.org/notice", verifiedAt: now.toISOString(), status: "open" };
+  const hint = { url: "https://example.org/hint", scope: "general" as const, observedAt: now.toISOString() };
+
+  it("通道与来源都没有 -> 一句话点齐两项", () => {
+    expect(unrecordedLine(race)).toBe("未收录：报名通道、来源公告，请以组委会公告为准。");
+  });
+  it("有官网无通道 -> 官网算一条来源，只点报名通道", () => {
+    expect(unrecordedLine({ ...race, officialSite: site })).toBe("未收录：报名通道，请以组委会公告为准。");
+  });
+  it("只有模型线索 -> 来源已可展示，不再报未收录", () => {
+    expect(unrecordedLine({ ...race, sources: [hint] })).toBe("未收录：报名通道，请以组委会公告为准。");
+  });
+  it("无网址的公众号指引算已收录通道", () => {
+    expect(unrecordedLine({ ...race, registrationChannels: [wechat], sources: [hint] })).toBeNull();
+  });
+  it("官网与通道是同一 URL 时来源仍算有（只是链接去重，不代表没证据）", () => {
+    expect(unrecordedLine({ ...race, officialSite: channel.url!, registrationChannels: [channel] })).toBeNull();
+  });
+  it("通道与来源齐全 -> 不输出缺失提示", () => {
+    expect(unrecordedLine({ ...race, registrationChannels: [channel], sources: [hint] })).toBeNull();
   });
 });
