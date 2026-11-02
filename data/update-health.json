@@ -1,20 +1,9 @@
 {
-  "lastSuccessfulRun": "2026-10-26T15:19:29.480Z",
+  "lastSuccessfulRun": "2026-11-02T06:45:37.601Z",
   "lastRun": {
-    "completedAt": "2026-10-29T11:52:11.354Z",
-    "succeeded": 23,
-    "failed": 10,
-    "failedNames": [
-      "贺州半程马拉松",
-      "腾冲马拉松",
-      "仙游马拉松",
-      "婺源马拉松",
-      "玉环半程马拉松",
-      "厦门海沧半程马拉松",
-      "云浮新兴半程马拉松",
-      "宁德马拉松",
-      "重庆半程马拉松",
-      "横琴马拉松"
-    ]
+    "completedAt": "2026-11-02T06:45:37.601Z",
+    "succeeded": 19,
+    "failed": 0,
+    "failedNames": []
   }
 }
