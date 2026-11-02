@@ -4154,7 +4154,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-11-02T12:47:34.736Z",
+    "updatedAt": "2026-11-02T14:55:00.000Z",
     "regStart": "2026-08-25",
     "regEnd": "2026-09-10",
     "lotteryDate": "2026-09-20",
@@ -4166,6 +4166,20 @@
         "url": "https://heilianapp.com/events/11365",
         "scope": "registration",
         "observedAt": "2026-11-02T12:47:34.736Z"
+      }
+    ],
+    "registrationChannels": [
+      {
+        "name": "最酷赛事报名",
+        "kind": "general",
+        "url": "https://reg.zuicool.com/55411",
+        "entranceType": "platform",
+        "sourceUrl": "https://zuicool.com/event/11365",
+        "verifiedAt": "2026-11-02T14:55:00.000Z",
+        "status": "closed",
+        "regStart": "2026-08-25",
+        "regEnd": "2026-09-10",
+        "requirements": "先缴费后抽签；报名 9-10 15:00 已截止，抽签结果 9-20 公布，未中签全额退费"
       }
     ]
   },
@@ -4622,7 +4636,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-11-02T12:47:34.736Z",
+    "updatedAt": "2026-11-02T14:55:00.000Z",
     "officialSite": "https://chengmai.jinshensports.com",
     "regStart": "2026-09-09",
     "regEnd": "2026-11-06",
@@ -4632,6 +4646,20 @@
         "url": "https://heilianapp.com/events/89590",
         "scope": "registration",
         "observedAt": "2026-11-02T12:47:34.736Z"
+      }
+    ],
+    "registrationChannels": [
+      {
+        "name": "最酷赛事报名",
+        "kind": "general",
+        "url": "https://reg.zuicool.com/56580",
+        "entranceType": "platform",
+        "sourceUrl": "https://zuicool.com/event/89590",
+        "verifiedAt": "2026-11-02T14:55:00.000Z",
+        "status": "open",
+        "regStart": "2026-09-09",
+        "regEnd": "2026-11-06",
+        "requirements": "不抽签、先报先得、额满即止；18 周岁以上，报名截止日前 24 个月内 2 次 10 公里及以上成绩，需上传完赛证书"
       }
     ]
   },
@@ -4728,7 +4756,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-11-02T12:47:34.736Z",
+    "updatedAt": "2026-11-02T14:55:00.000Z",
     "sources": [
       {
         "url": "https://www.greatwuyi.com/bdxw/content/202609/07/c1597044.html",
@@ -4744,7 +4772,21 @@
     ],
     "regStart": "2026-09-22",
     "regEnd": "2026-11-10",
-    "scale": "12000人"
+    "scale": "12000人",
+    "registrationChannels": [
+      {
+        "name": "最酷赛事报名",
+        "kind": "general",
+        "url": "https://reg.zuicool.com/94828",
+        "entranceType": "platform",
+        "sourceUrl": "https://zuicool.com/event/98513",
+        "verifiedAt": "2026-11-02T14:55:00.000Z",
+        "status": "open",
+        "regStart": "2026-09-22",
+        "regEnd": "2026-11-10",
+        "requirements": "不抽签、先报先得、额满即止；全马需 24 个月内 1 次全马或 2 次半马成绩，半马需 2 次 10 公里及以上成绩，需上传完赛证书"
+      }
+    ]
   },
   {
     "id": "南宁马拉松",
@@ -4800,7 +4842,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-11-02T12:47:34.736Z",
+    "updatedAt": "2026-11-02T14:55:00.000Z",
     "officialSite": "http://danma.cn/",
     "regStart": "2026-09-16",
     "regEnd": "2026-11-12",
@@ -4811,6 +4853,20 @@
         "url": "https://heilianapp.com/events/89955",
         "scope": "registration",
         "observedAt": "2026-11-02T12:47:34.736Z"
+      }
+    ],
+    "registrationChannels": [
+      {
+        "name": "最酷赛事报名",
+        "kind": "general",
+        "url": "https://reg.zuicool.com/55770",
+        "entranceType": "platform",
+        "sourceUrl": "https://zuicool.com/event/89955",
+        "verifiedAt": "2026-11-02T14:55:00.000Z",
+        "status": "open",
+        "regStart": "2026-09-16",
+        "regEnd": "2026-11-12",
+        "requirements": "额满即止；报名费马拉松 180 元/人、半程 160 元/人；公告原窗口 9-16 至 10-30，报名页已延至 11-12 23:59"
       }
     ]
   },
@@ -4939,7 +4995,7 @@
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-11-02T12:47:34.736Z",
+    "updatedAt": "2026-11-02T14:55:00.000Z",
     "sources": [
       {
         "url": "https://www.zhaobiao.cn/",
@@ -4959,7 +5015,21 @@
     ],
     "regStart": "2026-11-02",
     "regEnd": "2026-11-20",
-    "scale": "8000人"
+    "scale": "8000人",
+    "registrationChannels": [
+      {
+        "name": "最酷赛事报名",
+        "kind": "general",
+        "url": "https://reg.zuicool.com/49987",
+        "entranceType": "platform",
+        "sourceUrl": "https://zuicool.com/event/86435",
+        "verifiedAt": "2026-11-02T14:55:00.000Z",
+        "status": "open",
+        "regStart": "2026-11-02",
+        "regEnd": "2026-11-20",
+        "requirements": "不抽签、先报先得、额满即止；运营方公众号「中体大健康」（ZTDJK306）"
+      }
+    ]
   },
   {
     "id": "seoul-marathon",
