@@ -7,9 +7,12 @@ import type { Race } from "@/types/race";
 vi.mock("../../data/pending-reviews.json", () => ({ default: [{ raceId: "demo", from: "2026-11-01" }] }));
 const now = new Date("2026-10-16T04:00:00Z");
 const race: Race = { id: "demo", name: "测试赛事", country: "中国", raceDate: "2026-11-01", regStatus: "open", events: ["全程马拉松"], category: "unknown", updatedAt: now.toISOString() };
-it("无来源时明确提示，不把官网称作直接报名链接", () => {
+it("无来源时点名缺哪项，不把官网称作直接报名链接", () => {
   const html = renderToStaticMarkup(createElement(RaceEvidence, { race, now }));
-  expect(html).toContain("暂无已核验"); expect(html).toContain("来源公告待补充"); expect(html).toContain("有赛期变更线索待复核");
+  expect(html).toContain("未收录：报名通道、来源公告，请以组委会公告为准。");
+  expect(html).toContain("有赛期变更线索待复核");
+  expect(html).not.toContain("暂无已核验");
+  expect(html).not.toContain("待补充");
 });
 it("人工证据和模型线索分开展示，未知认证不显示为 B 类", () => {
   const item: Race = { ...race, sources: [{ url: "https://example.org/hint", scope: "general", observedAt: now.toISOString() }, { url: "https://example.org/notice", scope: "raceDate", observedAt: now.toISOString(), verifiedAt: now.toISOString() }] };
@@ -21,11 +24,11 @@ it("慈善通道明确说明报名类型和资格条件", () => {
   const html = renderToStaticMarkup(createElement(RaceEvidence, { race: item, now }));
   expect(html).toContain("查看慈善名额入口"); expect(html).toContain("需完成最低筹款额度"); expect(html).toContain("核验公告");
 });
-it("公众号报名无网址时显示报名指引而非入口链接，且不显示暂无通道提示", () => {
+it("公众号报名无网址时显示报名指引而非入口链接，且不报通道未收录", () => {
   const item: Race = { ...race, registrationChannels: [{ name: "普通报名", kind: "general", status: "open", entranceType: "wechat_official", entranceHint: "微信搜索'测试赛事'公众号→菜单栏报名", sourceUrl: "https://example.org/notice", verifiedAt: now.toISOString() }] };
   const html = renderToStaticMarkup(createElement(RaceEvidence, { race: item, now }));
   expect(html).toContain("报名方式：微信公众号"); expect(html).toContain("菜单栏报名"); expect(html).toContain("核验公告");
-  expect(html).not.toContain("暂无已核验");
+  expect(html).not.toContain("未收录：报名通道");
 });
 
 // Issue #11 定论后的口径：officialSite 不再单独成链接行（卡片主行、面板次级行均已删），
@@ -39,8 +42,8 @@ describe("officialSite 并入来源，不单独成行", () => {
     expect(html).toContain("赛事相关网站 ↗");
     expect(html).toContain("组委会站点");
     expect(html.split(site).length - 1).toBe(1); // 只在面板来源出现一次
-    expect(html).toContain("报名方式待核验，可先查看下方来源");
-    expect(html).not.toContain("来源公告待补充");
+    expect(html).toContain("未收录：报名通道，请以组委会公告为准。");
+    expect(html).not.toContain("未收录：报名通道、来源公告");
     expect(html).not.toContain("赛事官网");
     expect(html).not.toContain("官方报名");
   });
@@ -50,7 +53,7 @@ describe("officialSite 并入来源，不单独成行", () => {
     expect(html.split(site).length - 1).toBe(1);
     expect(html).toContain("核验公告");
     expect(html).not.toContain("赛事官网");
-    expect(html).not.toContain("报名方式待核验");
+    expect(html).not.toContain("未收录：");
   });
   it("无网址普通通道与仅慈善通道：通道正常展示，网站只作来源", () => {
     const wechat = { name: "普通报名", kind: "general" as const, status: "open" as const, entranceType: "wechat_official" as const, entranceHint: "微信搜索'测试赛事'公众号→菜单栏报名", sourceUrl: "https://example.org/notice", verifiedAt: now.toISOString() };
@@ -72,8 +75,7 @@ describe("officialSite 并入来源，不单独成行", () => {
   });
   it("无通道且无网站：不生成假链接，明确提示以组委会公告为准", () => {
     const html = renderToStaticMarkup(createElement(RaceEvidence, { race, now }));
-    expect(html).toContain("暂无已核验的直接报名通道，请以组委会公告为准");
-    expect(html).toContain("来源公告待补充");
+    expect(html).toContain("未收录：报名通道、来源公告，请以组委会公告为准。");
     expect(html).not.toContain("赛事相关网站");
   });
   it("通道已截止时不显示暗示现在可报名的文案", () => {
@@ -82,5 +84,28 @@ describe("officialSite 并入来源，不单独成行", () => {
     expect(html).toContain("查看通道说明 ↗");
     expect(html).not.toContain("查看普通报名入口");
     expect(html).toContain("已截止");
+  });
+});
+
+// 2026-11-02 定：今年版本的卡片不展示规模与报名费（数据字段保留，仅不再上页面），
+// 缺值一律用「未收录」，报名窗口两种旧说法合并成一种。
+describe("卡片次要信息与报名窗口的统一口径", () => {
+  it("有规模有价格也不显示", () => {
+    const html = renderToStaticMarkup(createElement(RaceCard, { race: { ...race, scale: "12000人", fee: "马拉松168元/半程139元", location: "福建省宁德市" }, now }));
+    expect(html).not.toContain("12000人");
+    expect(html).not.toContain("168元");
+    expect(html).not.toContain("规模");
+    expect(html).toContain("全程马拉松");
+    expect(html).toContain("记录更新");
+  });
+  it("报名中但没截止日期 -> 报名日期未收录", () => {
+    const html = renderToStaticMarkup(createElement(RaceCard, { race: { ...race, regStart: "2026-10-01" }, now }));
+    expect(html).toContain("报名日期未收录");
+    expect(html).not.toContain("待确认");
+  });
+  it("还没开放且整段窗口都没 -> 同一句报名日期未收录", () => {
+    const html = renderToStaticMarkup(createElement(RaceCard, { race: { ...race, regStatus: "pending" }, now }));
+    expect(html).toContain("报名日期未收录");
+    expect(html).not.toContain("待确认");
   });
 });

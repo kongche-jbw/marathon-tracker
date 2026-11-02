@@ -34,12 +34,10 @@ export default function RaceCard({ race, now }: { race: Race; now: Date }) {
   // 报名中且 7 天内截止 → 红色高亮
   const urgent = status === "open" && daysLeft !== null && daysLeft <= 7;
 
-  // 次要信息：只展示有值的字段，一行带过
+  // 规模与报名费刻意不上卡片：全站仅 47/331 与 10/331 有值，逐场显示会让卡片长短不齐；数据字段保留
   const details = [
     race.events.join(" / "),
-    race.scale && `规模 ${race.scale}`,
     race.lotteryDate && `抽签 ${race.lotteryDate.slice(5)}`,
-    race.fee,
     `记录更新 ${formatCheckedAt(race.updatedAt)}（北京时间）`,
   ].filter(Boolean);
 
@@ -79,12 +77,10 @@ export default function RaceCard({ race, now }: { race: Race; now: Date }) {
           <span className={urgent ? "font-bold text-red-600" : "font-semibold text-emerald-600"}>
             报名 {daysLeft === 0 ? "今天截止" : `还剩 ${daysLeft} 天`}
           </span>
-        ) : status === "open" ? (
-          <span>报名截止日期待确认</span>
         ) : race.regStart && race.regEnd ? (
           <span>报名 {race.regStart.slice(5)} 至 {race.regEnd.slice(5)}</span>
         ) : status !== "finished" ? (
-          <span>报名日期待确认</span>
+          <span>报名日期未收录</span>
         ) : null}
       </div>
 

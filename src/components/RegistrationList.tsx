@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Race } from "@/types/race";
+import { unrecordedLine } from "@/lib/evidence";
 import RaceCard from "./RaceCard";
 
 export default function RegistrationList({ races, now }: { races: Race[]; now: Date }) {
@@ -15,14 +16,14 @@ export default function RegistrationList({ races, now }: { races: Race[]; now: D
       </h2>
       <p className="mt-1 text-xs text-slate-500">按截止日期排序，截止日期未知的赛事列在最后。</p>
       <div id="registration-results" className="mt-3 grid gap-3 lg:grid-cols-2">
-        {races.map((race, index) => (
-          <div key={race.id} className={index >= 3 && !expanded ? "hidden sm:block" : ""}>
+        {races.map((race, index) => {
+          // 来源面板默认折叠，这句话在卡片外再说一遍：扫「正在报名」列表的人不该漏掉「不知道怎么报」
+          const unrecorded = unrecordedLine(race);
+          return <div key={race.id} className={index >= 3 && !expanded ? "hidden sm:block" : ""}>
             <RaceCard race={race} now={now} />
-            {!race.officialSite && !race.registrationChannels?.length && <p className="mt-1 px-2 text-xs leading-5 text-slate-600">
-              赛事相关网站与报名通道均待补充，请以组委会公告为准。
-            </p>}
-          </div>
-        ))}
+            {unrecorded && <p className="mt-1 px-2 text-xs leading-5 text-slate-600">{unrecorded}</p>}
+          </div>;
+        })}
       </div>
       {races.length > 3 && <button type="button" aria-expanded={expanded} aria-controls="registration-results"
         className="mt-3 min-h-11 w-full rounded-xl border border-orange-200 bg-white px-4 text-sm font-semibold text-orange-700 sm:hidden"

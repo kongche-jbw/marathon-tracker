@@ -67,3 +67,17 @@ export function siteAsSource(race: Race): string | null {
     ...(race.sources ?? []).map(source => source.url)];
   return shown.includes(url) ? null : url;
 }
+
+/**
+ * 缺失口径的唯一实现：库里没有可展示的值就点名缺哪一项，一律说「未收录」，不说「官方未公布」（那是我们无权断言的事实）。
+ * 「待核验」另有含义（AI 给了值、人未读公告），两种语义不混用；面板与「正在报名」列表共用这一句。
+ */
+export function unrecordedLine(race: Race): string | null {
+  const hasChannel = (race.registrationChannels ?? []).some(channel =>
+    isHttpUrl(channel.url) || (typeof channel.entranceHint === "string" && !!channel.entranceHint.trim()));
+  const hasEvidenceLink = isHttpUrl(race.officialSite) || (race.sources ?? []).some(source => isHttpUrl(source.url));
+  const missing: string[] = [];
+  if (!hasChannel) missing.push("报名通道");
+  if (!hasEvidenceLink) missing.push("来源公告");
+  return missing.length ? `未收录：${missing.join("、")}，请以组委会公告为准。` : null;
+}
