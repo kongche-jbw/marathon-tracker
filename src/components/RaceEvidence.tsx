@@ -1,7 +1,7 @@
 import pendingJson from "../../data/pending-reviews.json";
 import type { Race } from "@/types/race";
 import { deriveStatus } from "@/lib/status";
-import { isHttpUrl, siteAsSource, unrecordedLine } from "@/lib/evidence";
+import { isHttpUrl, panelLinks, unrecordedLine } from "@/lib/evidence";
 
 const kinds = { general: "普通报名", charity: "慈善名额", tour: "旅行套餐" };
 const entrances = { website: "官网", wechat_official: "微信公众号", wechat_miniprogram: "微信小程序", app: "APP", platform: "第三方平台" };
@@ -9,10 +9,9 @@ const statuses = { pending: "待开放", open: "报名中", drawing: "抽签中"
 export default function RaceEvidence({ race, now }: { race: Race; now: Date }) {
   const pending: { raceId: string; from: string }[] = pendingJson;
   const awaitingDateReview = pending.some(item => item.raceId === race.id && item.from === race.raceDate);
-  const sources = (race.sources ?? []).filter(source => isHttpUrl(source.url));
   const channels = (race.registrationChannels ?? []).filter(channel => isHttpUrl(channel.url) || (typeof channel.entranceHint === "string" && !!channel.entranceHint.trim()));
-  // officialSite 不单独成链接行，只作「来源」一条；去重口径与邮件简报共用 siteAsSource
-  const site = siteAsSource(race);
+  // 面板网址的唯一取舍口径：有通道核验公告时，官网与报名/信息类来源不再列行（见 panelLinks）
+  const { sources, site } = panelLinks(race);
   const unrecorded = unrecordedLine(race);
   return (
     <details className="mt-3 border-t border-orange-100 pt-1 text-sm text-slate-600">

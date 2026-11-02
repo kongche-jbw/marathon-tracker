@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { collectSourceHints, isCalendarDate, isHttpUrl, siteAsSource, unrecordedLine, validChannels, validSources } from "./evidence";
+import { collectSourceHints, isCalendarDate, isHttpUrl, panelLinks, siteAsSource, unrecordedLine, validChannels, validSources } from "./evidence";
 import { deriveStatus, withGeneralRegistration } from "./status";
 import { schemaIssues, loadSchema } from "../../scripts/lib/schema";
 import type { Race, RegistrationChannel } from "@/types/race";
@@ -122,5 +122,36 @@ describe("unrecordedLine：缺失信息统一说「未收录」", () => {
   });
   it("通道与来源齐全 -> 不输出缺失提示", () => {
     expect(unrecordedLine({ ...race, registrationChannels: [channel], sources: [hint] })).toBeNull();
+  });
+});
+
+// 2026-11-02 定的网址口径：面板里有已核验通道公告时，general/registration 来源与赛事网站一并收起，
+// 赛期与认证证据保留——同一件事不该在面板里占三行链接。
+describe("panelLinks：通道公告优先，其余网址收起", () => {
+  const site = "https://example.org/site";
+  const stamp = { observedAt: now.toISOString(), verifiedAt: now.toISOString() };
+  const reg = { url: "https://m.sh.bendibao.com/news/1.html", scope: "registration" as const, ...stamp };
+  const info = { url: "https://www.shio.gov.cn/notice.html", scope: "general" as const, ...stamp };
+  const date = { url: "https://example.org/date", scope: "raceDate" as const, ...stamp };
+  const cat = { url: "https://example.org/cat", scope: "category" as const, ...stamp };
+
+  it("无通道 -> 来源与官网照旧全显示", () => {
+    const panel = panelLinks({ ...race, officialSite: site, sources: [reg, info] });
+    expect(panel.sources.map(source => source.url)).toEqual([reg.url, info.url]);
+    expect(panel.site).toBe(site);
+  });
+  it("有已核验通道 -> 报名与信息类来源、官网都不显示，面板只剩公告一个网址", () => {
+    const panel = panelLinks({ ...race, officialSite: site, registrationChannels: [channel], sources: [reg, info] });
+    expect(panel.sources).toEqual([]);
+    expect(panel.site).toBeNull();
+  });
+  it("赛期与认证来源保留", () => {
+    const panel = panelLinks({ ...race, registrationChannels: [channel], sources: [reg, date, cat] });
+    expect(panel.sources.map(source => source.url)).toEqual([date.url, cat.url]);
+  });
+  it("非法 URL 不进面板，模型线索同样按 scope 收", () => {
+    const hint = { url: "https://example.org/hint", scope: "general" as const, observedAt: now.toISOString() };
+    const panel = panelLinks({ ...race, registrationChannels: [channel], sources: [{ url: "javascript:alert(1)", scope: "raceDate" as const, observedAt: now.toISOString() }, hint, date] });
+    expect(panel.sources.map(source => source.url)).toEqual([date.url]);
   });
 });
