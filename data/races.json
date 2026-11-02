@@ -4148,13 +4148,26 @@
     "country": "中国",
     "province": "安徽",
     "raceDate": "2026-11-15",
-    "regStatus": "pending",
+    "regStatus": "closed",
     "events": [
-      "全程马拉松"
+      "全程马拉松",
+      "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-11T13:25:07.879Z",
-    "regStart": "2026-08-25"
+    "updatedAt": "2026-11-02T12:47:34.736Z",
+    "regStart": "2026-08-25",
+    "regEnd": "2026-09-10",
+    "lotteryDate": "2026-09-20",
+    "needLottery": true,
+    "scale": "12000人",
+    "fee": "全程马拉松120元、半程马拉松100元",
+    "sources": [
+      {
+        "url": "https://heilianapp.com/events/11365",
+        "scope": "registration",
+        "observedAt": "2026-11-02T12:47:34.736Z"
+      }
+    ]
   },
   {
     "id": "杭州建德马拉松",
@@ -4604,13 +4617,23 @@
     "country": "中国",
     "province": "海南",
     "raceDate": "2026-12-06",
-    "regStatus": "pending",
+    "regStatus": "open",
     "events": [
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-11T13:27:47.022Z",
-    "officialSite": "https://chengmai.jinshensports.com"
+    "updatedAt": "2026-11-02T12:47:34.736Z",
+    "officialSite": "https://chengmai.jinshensports.com",
+    "regStart": "2026-09-09",
+    "regEnd": "2026-11-06",
+    "scale": "6000人",
+    "sources": [
+      {
+        "url": "https://heilianapp.com/events/89590",
+        "scope": "registration",
+        "observedAt": "2026-11-02T12:47:34.736Z"
+      }
+    ]
   },
   {
     "id": "忠县马拉松",
@@ -4699,20 +4722,29 @@
     "country": "中国",
     "province": "福建",
     "raceDate": "2026-11-22",
-    "regStatus": "pending",
+    "regStatus": "open",
     "events": [
-      "全程马拉松"
+      "全程马拉松",
+      "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-11-02T07:11:22.580Z",
+    "updatedAt": "2026-11-02T12:47:34.736Z",
     "sources": [
       {
         "url": "https://www.greatwuyi.com/bdxw/content/202609/07/c1597044.html",
         "scope": "raceDate",
         "observedAt": "2026-11-02T07:11:22.580Z",
         "verifiedAt": "2026-11-02T07:11:22.580Z"
+      },
+      {
+        "url": "https://heilianapp.com/events/98513",
+        "scope": "registration",
+        "observedAt": "2026-11-02T12:47:34.736Z"
       }
-    ]
+    ],
+    "regStart": "2026-09-22",
+    "regEnd": "2026-11-10",
+    "scale": "12000人"
   },
   {
     "id": "南宁马拉松",
@@ -4762,13 +4794,25 @@
     "country": "中国",
     "province": "海南",
     "raceDate": "2026-12-20",
-    "regStatus": "pending",
+    "regStatus": "open",
     "events": [
-      "全程马拉松"
+      "全程马拉松",
+      "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-09-03T01:25:12.582Z",
-    "officialSite": "http://danma.cn/"
+    "updatedAt": "2026-11-02T12:47:34.736Z",
+    "officialSite": "http://danma.cn/",
+    "regStart": "2026-09-16",
+    "regEnd": "2026-11-12",
+    "scale": "11000人",
+    "fee": "全程马拉松180元/人、半程马拉松160元/人",
+    "sources": [
+      {
+        "url": "https://heilianapp.com/events/89955",
+        "scope": "registration",
+        "observedAt": "2026-11-02T12:47:34.736Z"
+      }
+    ]
   },
   {
     "id": "江门马拉松",
@@ -4890,12 +4934,12 @@
     "country": "中国",
     "province": "四川",
     "raceDate": "2026-12-27",
-    "regStatus": "pending",
+    "regStatus": "open",
     "events": [
       "半程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-10-16T15:05:30.332Z",
+    "updatedAt": "2026-11-02T12:47:34.736Z",
     "sources": [
       {
         "url": "https://www.zhaobiao.cn/",
@@ -4906,8 +4950,16 @@
         "url": "https://www.sport.gov.cn/",
         "observedAt": "2026-10-16T14:36:06.433Z",
         "scope": "general"
+      },
+      {
+        "url": "https://heilianapp.com/events/86435",
+        "scope": "registration",
+        "observedAt": "2026-11-02T12:47:34.736Z"
       }
-    ]
+    ],
+    "regStart": "2026-11-02",
+    "regEnd": "2026-11-20",
+    "scale": "8000人"
   },
   {
     "id": "seoul-marathon",
