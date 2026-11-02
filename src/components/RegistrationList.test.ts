@@ -12,6 +12,10 @@ it("报名赛事包含项目、抽签、完整年份，缺项统一说未收录�
   expect(html).not.toContain("报名时间暂未公布");
   expect(html).not.toContain("均待补充");
 });
+it("「未收录」只在来源面板里说一次，卡片外不重复", () => {
+  const html = renderToStaticMarkup(createElement(RegistrationList, { races: [race], now }));
+  expect(html.split("未收录：报名通道、来源公告").length - 1).toBe(1);
+});
 it("空列表不创建空栏目，多于三场提供手机展开入口", () => {
   expect(renderToStaticMarkup(createElement(RegistrationList, { races: [], now }))).toBe("");
   const races = Array.from({ length: 4 }, (_, index) => ({ ...race, id: String(index) }));

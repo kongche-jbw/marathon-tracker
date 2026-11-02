@@ -75,9 +75,24 @@ export function siteAsSource(race: Race): string | null {
 export function unrecordedLine(race: Race): string | null {
   const hasChannel = (race.registrationChannels ?? []).some(channel =>
     isHttpUrl(channel.url) || (typeof channel.entranceHint === "string" && !!channel.entranceHint.trim()));
-  const hasEvidenceLink = isHttpUrl(race.officialSite) || (race.sources ?? []).some(source => isHttpUrl(source.url));
+  const hasEvidenceLink = isHttpUrl(race.officialSite) || (race.sources ?? []).some(source => isHttpUrl(source.url))
+    || (race.registrationChannels ?? []).some(channel => isHttpUrl(channel.sourceUrl));
   const missing: string[] = [];
   if (!hasChannel) missing.push("报名通道");
   if (!hasEvidenceLink) missing.push("来源公告");
   return missing.length ? `未收录：${missing.join("、")}，请以组委会公告为准。` : null;
+}
+
+/**
+ * 来源面板的网址取舍：有已核验报名通道时，通道的核验公告就是这条报名信息的出处，
+ * 官网与 general/registration 类来源不再重复占行；赛期与认证证据另有指向，一律保留。
+ */
+export function panelLinks(race: Race): { sources: RaceSource[]; site: string | null } {
+  const all = (race.sources ?? []).filter(source => isHttpUrl(source.url));
+  const hasChannelNotice = (race.registrationChannels ?? []).some(channel => isHttpUrl(channel.sourceUrl));
+  if (!hasChannelNotice) return { sources: all, site: siteAsSource(race) };
+  return {
+    sources: all.filter(source => source.scope === "raceDate" || source.scope === "category"),
+    site: null,
+  };
 }
