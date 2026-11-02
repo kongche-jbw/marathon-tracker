@@ -4698,13 +4698,21 @@
     "name": "武夷山马拉松",
     "country": "中国",
     "province": "福建",
-    "raceDate": "2026-11-29",
+    "raceDate": "2026-11-22",
     "regStatus": "pending",
     "events": [
       "全程马拉松"
     ],
     "category": "A",
-    "updatedAt": "2026-11-02T06:42:23.179Z"
+    "updatedAt": "2026-11-02T07:11:22.580Z",
+    "sources": [
+      {
+        "url": "https://www.greatwuyi.com/bdxw/content/202609/07/c1597044.html",
+        "scope": "raceDate",
+        "observedAt": "2026-11-02T07:11:22.580Z",
+        "verifiedAt": "2026-11-02T07:11:22.580Z"
+      }
+    ]
   },
   {
     "id": "南宁马拉松",
