@@ -103,7 +103,7 @@ describe("通道公告优先：一台卡片只留一个核验网址", () => {
     expect(html).not.toContain("bendibao");
     expect(html).not.toContain("shio.gov.cn");
     expect(html).not.toContain("赛事相关网站");
-    expect(html).not.toContain("未收录");
+    expect(html).not.toContain("未收录：");
   });
   it("有通道时赛期与认证来源仍保留", () => {
     const item: Race = { ...race, registrationChannels: [wechat], sources: [
@@ -115,7 +115,7 @@ describe("通道公告优先：一台卡片只留一个核验网址", () => {
   });
   it("只有通道公告、没有 sources 也不报「未收录：来源公告」", () => {
     const html = renderToStaticMarkup(createElement(RaceEvidence, { race: { ...race, registrationChannels: [wechat] }, now }));
-    expect(html).not.toContain("未收录");
+    expect(html).not.toContain("未收录：");
     expect(html).toContain("核验公告");
   });
 });
@@ -139,6 +139,12 @@ describe("卡片次要信息与报名窗口的统一口径", () => {
   it("还没开放且整段窗口都没 -> 同一句报名日期未收录", () => {
     const html = renderToStaticMarkup(createElement(RaceCard, { race: { ...race, regStatus: "pending" }, now }));
     expect(html).toContain("报名日期未收录");
+    expect(html).not.toContain("待确认");
+  });
+  it("通道只写额满即止、没公布截止日 -> 截止日期说未收录", () => {
+    const quotaOnly: RegistrationChannel = { name: "最酷赛事报名", kind: "general", status: "open", url: "https://example.org/entry", sourceUrl: "https://example.org/notice", verifiedAt: now.toISOString(), regStart: "2026-09-29", requirements: "先报先得、额满即止" };
+    const html = renderToStaticMarkup(createElement(RaceEvidence, { race: { ...race, registrationChannels: [quotaOnly] }, now }));
+    expect(html).toContain("截止日期：未收录");
     expect(html).not.toContain("待确认");
   });
 });
