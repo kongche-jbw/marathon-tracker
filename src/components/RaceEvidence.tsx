@@ -23,7 +23,7 @@ export default function RaceEvidence({ race, now }: { race: Race; now: Date }) {
         return <div key={channel.url ?? `${channel.name}:${channel.entranceHint}`} className="mb-3 rounded-xl bg-orange-50/70 p-3">
           <p className="font-medium text-slate-800">{kinds[channel.kind]} · {channel.name} · {statuses[status]}</p>
           {channel.requirements && <p className="mt-1 text-xs leading-5">{channel.requirements}</p>}
-          <p className="mt-1 text-xs">截止日期：{channel.regEnd || "待确认"} · 核验于 {channel.verifiedAt.slice(0, 10)}</p>
+          <p className="mt-1 text-xs">截止日期：{channel.regEnd || "未收录"} · 核验于 {channel.verifiedAt.slice(0, 10)}</p>
           {isHttpUrl(channel.url) ? (
             <div className="flex flex-wrap gap-x-4">
               <a href={channel.url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center font-semibold text-orange-700">{status === "open" ? `查看${kinds[channel.kind]}入口 ↗` : "查看通道说明 ↗"}</a>
